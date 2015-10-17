@@ -17,7 +17,7 @@ void initialize_clock()
 
 	// Startup clock system with max DCO setting ~8MHz
 	CSCTL0_H = CSKEY >> 8;                    // Unlock clock registers
-	CSCTL1 = DCOFSEL_0;// | DCORSEL;             // Set DCO to 1MHz
+	CSCTL1 = DCOFSEL_3 | DCORSEL;
 	CSCTL2 = SELA__VLOCLK | SELS__DCOCLK | SELM__DCOCLK;
 	CSCTL3 = DIVA__1 | DIVS__1 | DIVM__1;     // Set all dividers
 	CSCTL0_H = 0;                             // Lock CS registers
@@ -34,12 +34,7 @@ void initialize_uart()
 	// Configure USCI_A0 for UART mode
 	UCA0CTLW0 = UCSWRST;                      // Put eUSCI in reset
 	UCA0CTLW0 |= UCSSEL__SMCLK;               // CLK = SMCLK
-	// Baud Rate calculation
-	// 8000000/(16*115200) = 52.083
-	// Fractional portion = 0.083
-	// User's Guide Table 21-4: UCBRSx = 0x04
-	// UCBRFx = int ( (52.083-52)*16) = 1
-	UCA0BR0 = 52; //115200 baud rate
+	UCA0BR0 = 52; //9600
 	UCA0BR1 = 0x00;
 	UCA0MCTLW |= UCOS16 | UCBRF_1 | 0x4900;
 	UCA0CTLW0 &= ~UCSWRST;                    // Initialize eUSCI
@@ -117,9 +112,9 @@ __interrupt void USCI_B0_ISR(void)
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
 
-	//initialize_uart();
+	//
     initialize_clock();
-
+    initialize_uart();
     volatile unsigned int i;
 
     P1OUT |= LED0;
@@ -127,18 +122,18 @@ int main(void) {
 
 	P9OUT |= LED1;
 	P9DIR |= LED1;
-	initialize_spi();
+	//initialize_spi();
 
-	//print_uart("Hello world\n\r");
-	__bis_SR_register(GIE);     // enable interrupts
+	print_uart("Hello world\n\r");
+	//__bis_SR_register(GIE);     // enable interrupts
 	TXData = 0x01;
 	UCB0TXBUF = TXData;
 	for(;;) {
-//		P1OUT ^= BIT0;				// Toggle P1.0 using exclusive-OR
+		P1OUT ^= BIT0;				// Toggle P1.0 using exclusive-OR
 
-//		i = 10000;                          // SW Delay
-//		do i--;
-//		while(i != 0);
+		i = 10000;                          // SW Delay
+		do i--;
+		while(i != 0);
 	}
 	return 0;
 }
