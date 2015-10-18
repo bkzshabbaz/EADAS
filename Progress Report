@@ -1,0 +1,55 @@
+1.Project Title and team member names.
+  E - Elderly
+  A - Asset
+  D - Distress
+  A - Alarm
+  S - System
+  
+  Team - Lalita Bhaskaruni, Abhimanyu Chopra, Sammy Lin, and Nisarg Patel
+  
+2.Project assignments/responsibilities for each team member.
+  Lalita Bhaskaruni - GSM+GPS Module
+  Abhimanyu Chopra  - Heart rate Sensor (Photoplethysmograph)
+  Sammy Lin         - Accelerometer and Gyroscope
+  Nisarg Patel      - LCD
+  
+3.Brief problem description/objective of the project.
+  This system will monitor a user's health information (heart rate, and vertical orientation).
+  When a distress is detected either by a fall or a spike in heart rate, an SMS notification is
+  sent out to a pre-configured phone number with the details of the distress.
+
+4.The selected version of the MSP430 that will be used to implement the solution.
+  MSP430FR6989 Launchpad
+  
+5.What MSP430 peripherals will be utilized, and modes of operation (ie: polling, interrupt, etc)
+  UART
+  SPI
+  TIMER
+  INTERRUPT
+  GPIO
+  Modes of Operation ? 
+
+6.A high level block diagram showing all components to be connected to the MSP430.  This must
+include number of line/type of bus connection that will be made.
+  << Kindly add as required >>
+  
+                           ___________
+                          |           |------AN-----[Heart Rate Sensor]
+                          |           |
+                          |  MSP430   |
+                          |           |
+                          |           |
+                          |___________|
+
+
+
+7.A high level software flow chart, both for the main functional flow and interrupts.
+      
+      Heart Rate Sensor - Serviced by a timer interrupt every 2 ms
+      LCD updated as an interrupt
+
+
+
+
+
+8.Any challenges that do not have a clear plan/solution moving forward.
