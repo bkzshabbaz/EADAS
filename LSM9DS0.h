@@ -19,9 +19,10 @@ local, and you've found our code helpful, please buy us a round!
 
 Distributed as-is; no warranty is given.
 ******************************************************************************/
-#ifndef __SFE_LSM9DS0_H__
-#define __SFE_LSM9DS0_H__
+#ifndef __LSM9DS0_H__
+#define __LSM9DS0_H__
 #include <stdint.h>
+#include <msp430.h>
 
 ////////////////////////////
 // LSM9DS0 Gyro Registers //
@@ -111,98 +112,103 @@ Distributed as-is; no warranty is given.
 #define TIME_WINDOW			0x3D
 #define ACT_THS				0x3E
 #define ACT_DUR				0x3F
-//
-//class LSM9DS0 {
-//public:
-//	// gyro_scale defines the possible full-scale ranges of the gyroscope:
-//	enum gyro_scale
-//	{
-//		G_SCALE_245DPS,		// 00:  245 degrees per second
-//		G_SCALE_500DPS,		// 01:  500 dps
-//		G_SCALE_2000DPS,	// 10:  2000 dps
-//	};
-//	// accel_scale defines all possible FSR's of the accelerometer:
-//	enum accel_scale
-//	{
-//		A_SCALE_2G,	// 000:  2g
-//		A_SCALE_4G,	// 001:  4g
-//		A_SCALE_6G,	// 010:  6g
-//		A_SCALE_8G,	// 011:  8g
-//		A_SCALE_16G	// 100:  16g
-//	};
-//	// mag_scale defines all possible FSR's of the magnetometer:
-//	enum mag_scale
-//	{
-//		M_SCALE_2GS,	// 00:  2Gs
-//		M_SCALE_4GS, 	// 01:  4Gs
-//		M_SCALE_8GS,	// 10:  8Gs
-//		M_SCALE_12GS,	// 11:  12Gs
-//	};
-//	// gyro_odr defines all possible data rate/bandwidth combos of the gyro:
-//	enum gyro_odr
-//	{							// ODR (Hz) --- Cutoff
-//		G_ODR_95_BW_125  = 0x0, //   95         12.5
-//		G_ODR_95_BW_25   = 0x1, //   95          25
-//		// 0x2 and 0x3 define the same data rate and bandwidth
-//		G_ODR_190_BW_125 = 0x4, //   190        12.5
-//		G_ODR_190_BW_25  = 0x5, //   190         25
-//		G_ODR_190_BW_50  = 0x6, //   190         50
-//		G_ODR_190_BW_70  = 0x7, //   190         70
-//		G_ODR_380_BW_20  = 0x8, //   380         20
-//		G_ODR_380_BW_25  = 0x9, //   380         25
-//		G_ODR_380_BW_50  = 0xA, //   380         50
-//		G_ODR_380_BW_100 = 0xB, //   380         100
-//		G_ODR_760_BW_30  = 0xC, //   760         30
-//		G_ODR_760_BW_35  = 0xD, //   760         35
-//		G_ODR_760_BW_50  = 0xE, //   760         50
-//		G_ODR_760_BW_100 = 0xF, //   760         100
-//	};
-//	// accel_oder defines all possible output data rates of the accelerometer:
-//	enum accel_odr
-//	{
-//		A_POWER_DOWN, 	// Power-down mode (0x0)
-//		A_ODR_3125,		// 3.125 Hz	(0x1)
-//		A_ODR_625,		// 6.25 Hz (0x2)
-//		A_ODR_125,		// 12.5 Hz (0x3)
-//		A_ODR_25,		// 25 Hz (0x4)
-//		A_ODR_50,		// 50 Hz (0x5)
-//		A_ODR_100,		// 100 Hz (0x6)
-//		A_ODR_200,		// 200 Hz (0x7)
-//		A_ODR_400,		// 400 Hz (0x8)
-//		A_ODR_800,		// 800 Hz (9)
-//		A_ODR_1600		// 1600 Hz (0xA)
-//	};
-//
-//      // accel_abw defines all possible anti-aliasing filter rates of the accelerometer:
-//	enum accel_abw
-//	{
-//		A_ABW_773,		// 773 Hz (0x0)
-//		A_ABW_194,		// 194 Hz (0x1)
-//		A_ABW_362,		// 362 Hz (0x2)
-//		A_ABW_50,		//  50 Hz (0x3)
-//	};
-//
-//
-//	// mag_oder defines all possible output data rates of the magnetometer:
-//	enum mag_odr
-//	{
-//		M_ODR_3125,	// 3.125 Hz (0x00)
-//		M_ODR_625,	// 6.25 Hz (0x01)
-//		M_ODR_125,	// 12.5 Hz (0x02)
-//		M_ODR_25,	// 25 Hz (0x03)
-//		M_ODR_50,	// 50 (0x04)
-//		M_ODR_100,	// 100 Hz (0x05)
-//	};
-//
-//	// We'll store the gyro, accel, and magnetometer readings in a series of
-//	// public class variables. Each sensor gets three variables -- one for each
-//	// axis. Call readGyro(), readAccel(), and readMag() first, before using
-//	// these variables!
-//	// These values are the RAW signed 16-bit readings from the sensors.
-//	int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
-//	int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
-//	int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
-//
+
+enum chip_select
+{
+	GYRO,
+	ACCEL
+};
+
+// gyro_scale defines the possible full-scale ranges of the gyroscope:
+enum gyro_scale
+{
+	G_SCALE_245DPS,		// 00:  245 degrees per second
+	G_SCALE_500DPS,		// 01:  500 dps
+	G_SCALE_2000DPS		// 10:  2000 dps
+};
+
+// accel_scale defines all possible FSR's of the accelerometer:
+enum accel_scale
+{
+	A_SCALE_2G,	// 000:  2g
+	A_SCALE_4G,	// 001:  4g
+	A_SCALE_6G,	// 010:  6g
+	A_SCALE_8G,	// 011:  8g
+	A_SCALE_16G	// 100:  16g
+};
+// mag_scale defines all possible FSR's of the magnetometer:
+enum mag_scale
+{
+	M_SCALE_2GS,	// 00:  2Gs
+	M_SCALE_4GS, 	// 01:  4Gs
+	M_SCALE_8GS,	// 10:  8Gs
+	M_SCALE_12GS	// 11:  12Gs
+};
+// gyro_odr defines all possible data rate/bandwidth combos of the gyro:
+enum gyro_odr
+{							// ODR (Hz) --- Cutoff
+	G_ODR_95_BW_125  = 0x0, //   95         12.5
+	G_ODR_95_BW_25   = 0x1, //   95          25
+	// 0x2 and 0x3 define the same data rate and bandwidth
+	G_ODR_190_BW_125 = 0x4, //   190        12.5
+	G_ODR_190_BW_25  = 0x5, //   190         25
+	G_ODR_190_BW_50  = 0x6, //   190         50
+	G_ODR_190_BW_70  = 0x7, //   190         70
+	G_ODR_380_BW_20  = 0x8, //   380         20
+	G_ODR_380_BW_25  = 0x9, //   380         25
+	G_ODR_380_BW_50  = 0xA, //   380         50
+	G_ODR_380_BW_100 = 0xB, //   380         100
+	G_ODR_760_BW_30  = 0xC, //   760         30
+	G_ODR_760_BW_35  = 0xD, //   760         35
+	G_ODR_760_BW_50  = 0xE, //   760         50
+	G_ODR_760_BW_100 = 0xF //   760         100
+};
+// accel_oder defines all possible output data rates of the accelerometer:
+enum accel_odr
+{
+	A_POWER_DOWN, 	// Power-down mode (0x0)
+	A_ODR_3125,		// 3.125 Hz	(0x1)
+	A_ODR_625,		// 6.25 Hz (0x2)
+	A_ODR_125,		// 12.5 Hz (0x3)
+	A_ODR_25,		// 25 Hz (0x4)
+	A_ODR_50,		// 50 Hz (0x5)
+	A_ODR_100,		// 100 Hz (0x6)
+	A_ODR_200,		// 200 Hz (0x7)
+	A_ODR_400,		// 400 Hz (0x8)
+	A_ODR_800,		// 800 Hz (9)
+	A_ODR_1600		// 1600 Hz (0xA)
+};
+
+  // accel_abw defines all possible anti-aliasing filter rates of the accelerometer:
+enum accel_abw
+{
+	A_ABW_773,		// 773 Hz (0x0)
+	A_ABW_194,		// 194 Hz (0x1)
+	A_ABW_362,		// 362 Hz (0x2)
+	A_ABW_50		//  50 Hz (0x3)
+};
+
+
+// mag_oder defines all possible output data rates of the magnetometer:
+enum mag_odr
+{
+	M_ODR_3125,	// 3.125 Hz (0x00)
+	M_ODR_625,	// 6.25 Hz (0x01)
+	M_ODR_125,	// 12.5 Hz (0x02)
+	M_ODR_25,	// 25 Hz (0x03)
+	M_ODR_50,	// 50 (0x04)
+	M_ODR_100	// 100 Hz (0x05)
+};
+
+// We'll store the gyro, accel, and magnetometer readings in a series of
+// global variables. Each sensor gets three variables -- one for each
+// axis. Call readGyro(), readAccel(), and readMag() first, before using
+// these variables!
+// These values are the RAW signed 16-bit readings from the sensors.
+int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
+int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
+int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
+
 //	float abias[3];
 //	float gbias[3];
 //
@@ -223,22 +229,20 @@ Distributed as-is; no warranty is given.
 //	// Default values are FSR's of:  245DPS, 2g, 2Gs; ODRs of 95 Hz for
 //	// gyro, 100 Hz for accelerometer, 100 Hz for magnetometer.
 //	// Use the return value of this function to verify communication.
-//	uint16_t begin(gyro_scale gScl = G_SCALE_245DPS,
-//				accel_scale aScl = A_SCALE_2G, mag_scale mScl = M_SCALE_2GS,
-//				gyro_odr gODR = G_ODR_95_BW_125, accel_odr aODR = A_ODR_50,
-//				mag_odr mODR = M_ODR_50);
+uint16_t lsm9ds0_begin(enum gyro_scale gScl, enum accel_scale aScl, enum mag_scale mScl,
+		enum gyro_odr gODR, enum accel_odr aODR, enum mag_odr mODR);
 //
 //	// readGyro() -- Read the gyroscope output registers.
 //	// This function will read all six gyroscope output registers.
 //	// The readings are stored in the class' gx, gy, and gz variables. Read
 //	// those _after_ calling readGyro().
-//	void readGyro();
+void readGyro();
 //
 //	// readAccel() -- Read the accelerometer output registers.
 //	// This function will read all six accelerometer output registers.
 //	// The readings are stored in the class' ax, ay, and az variables. Read
 //	// those _after_ calling readAccel().
-//	void readAccel();
+void readAccel();
 //
 //	// readMag() -- Read the magnetometer output registers.
 //	// This function will read all six magnetometer output registers.
@@ -352,30 +356,30 @@ Distributed as-is; no warranty is given.
 //	// Units of these values would be DPS (or g's or Gs's) per ADC tick.
 //	// This value is calculated as (sensor scale) / (2^15).
 //	float gRes, aRes, mRes;
-//
-//	// initGyro() -- Sets up the gyroscope to begin reading.
-//	// This function steps through all five gyroscope control registers.
-//	// Upon exit, the following parameters will be set:
-//	//	- CTRL_REG1_G = 0x0F: Normal operation mode, all axes enabled.
-//	//		95 Hz ODR, 12.5 Hz cutoff frequency.
-//	//	- CTRL_REG2_G = 0x00: HPF set to normal mode, cutoff frequency
-//	//		set to 7.2 Hz (depends on ODR).
-//	//	- CTRL_REG3_G = 0x88: Interrupt enabled on INT_G (set to push-pull and
-//	//		active high). Data-ready output enabled on DRDY_G.
-//	//	- CTRL_REG4_G = 0x00: Continuous update mode. Data LSB stored in lower
-//	//		address. Scale set to 245 DPS. SPI mode set to 4-wire.
-//	//	- CTRL_REG5_G = 0x00: FIFO disabled. HPF disabled.
-//	void initGyro();
-//
-//	// initAccel() -- Sets up the accelerometer to begin reading.
-//	// This function steps through all accelerometer related control registers.
-//	// Upon exit these registers will be set as:
-//	//	- CTRL_REG0_XM = 0x00: FIFO disabled. HPF bypassed. Normal mode.
-//	//	- CTRL_REG1_XM = 0x57: 100 Hz data rate. Continuous update.
-//	//		all axes enabled.
-//	//	- CTRL_REG2_XM = 0x00:  2g scale. 773 Hz anti-alias filter BW.
-//	//	- CTRL_REG3_XM = 0x04: Accel data ready signal on INT1_XM pin.
-//	void initAccel();
+
+// initGyro() -- Sets up the gyroscope to begin reading.
+// This function steps through all five gyroscope control registers.
+// Upon exit, the following parameters will be set:
+//	- CTRL_REG1_G = 0x0F: Normal operation mode, all axes enabled.
+//		95 Hz ODR, 12.5 Hz cutoff frequency.
+//	- CTRL_REG2_G = 0x00: HPF set to normal mode, cutoff frequency
+//		set to 7.2 Hz (depends on ODR).
+//	- CTRL_REG3_G = 0x88: Interrupt enabled on INT_G (set to push-pull and
+//		active high). Data-ready output enabled on DRDY_G.
+//	- CTRL_REG4_G = 0x00: Continuous update mode. Data LSB stored in lower
+//		address. Scale set to 245 DPS. SPI mode set to 4-wire.
+//	- CTRL_REG5_G = 0x00: FIFO disabled. HPF disabled.
+void initGyro();
+
+// initAccel() -- Sets up the accelerometer to begin reading.
+// This function steps through all accelerometer related control registers.
+// Upon exit these registers will be set as:
+//	- CTRL_REG0_XM = 0x00: FIFO disabled. HPF bypassed. Normal mode.
+//	- CTRL_REG1_XM = 0x57: 100 Hz data rate. Continuous update.
+//		all axes enabled.
+//	- CTRL_REG2_XM = 0x00:  2g scale. 773 Hz anti-alias filter BW.
+//	- CTRL_REG3_XM = 0x04: Accel data ready signal on INT1_XM pin.
+void initAccel();
 //
 //	// initMag() -- Sets up the magnetometer to begin reading.
 //	// This function steps through all magnetometer-related control registers.
@@ -451,4 +455,4 @@ Distributed as-is; no warranty is given.
 //	// be set prior to calling this function.
 //	void calcaRes();
 //};
-#endif // SFE_LSM9DS0_H //
+#endif // __LSM9DS0_H //
