@@ -132,28 +132,6 @@ void writeByte(enum chip_select cs, uint8_t subAddress, uint8_t data)
 	disable_chip(cs);
 }
 
-uint16_t lsm9ds0_begin(enum gyro_scale gScl, enum accel_scale aScl, enum mag_scale mScl,
-		enum gyro_odr gODR, enum accel_odr aODR, enum mag_odr mODR)
-{
-	gScale = gScl;
-	aScale = aScl;
-	mScale = mScl;
-
-	// Once we have the scale values, we can calculate the resolution
-	// of each sensor. That's what these functions are for. One for each sensor
-	calcgRes(); // Calculate DPS / ADC tick, stored in gRes variable
-	calcmRes(); // Calculate Gs / ADC tick, stored in mRes variable
-	calcaRes(); // Calculate g / ADC tick, stored in aRes variable
-
-	uint8_t gTest = readByte(GYRO, WHO_AM_I_G);		// Read the gyro WHO_AM_I
-	uint8_t xmTest = readByte(ACCEL, WHO_AM_I_XM);	// Read the accel/mag WHO_AM_I
-	initGyro();
-	initAccel();
-	initMag();
-
-	return (xmTest << 8) | gTest;
-}
-
 void initGyro()
 {
 	/* CTRL_REG1_G sets output data rate, bandwidth, power-down and enables
@@ -312,17 +290,69 @@ void initMag()
 // This function will read all six gyroscope output registers.
 // The readings are stored in the class' gx, gy, and gz variables. Read
 // those _after_ calling readGyro().
-void readGyro();
+void readGyro()
+{
+	uint8_t temp[6]; // We'll read six bytes from the gyro into temp
+	readBytes(GYRO, OUT_X_L_G, temp, 6); // Read 6 bytes, beginning at OUT_X_L_G
+	gx = (temp[1] << 8) | temp[0]; // Store x-axis values into gx
+	gy = (temp[3] << 8) | temp[2]; // Store y-axis values into gy
+	gz = (temp[5] << 8) | temp[4]; // Store z-axis values into gz
+}
 
 // readAccel() -- Read the accelerometer output registers.
 // This function will read all six accelerometer output registers.
 // The readings are stored in the class' ax, ay, and az variables. Read
 // those _after_ calling readAccel().
-void readAccel();
+void readAccel()
+{
+	uint8_t temp[6]; // We'll read six bytes from the accelerometer into temp
+	readBytes(ACCEL, OUT_X_L_A, temp, 6); // Read 6 bytes, beginning at OUT_X_L_A
+	ax = (temp[1] << 8) | temp[0]; // Store x-axis values into ax
+	ay = (temp[3] << 8) | temp[2]; // Store y-axis values into ay
+	az = (temp[5] << 8) | temp[4]; // Store z-axis values into az
+}
 
 void calLSM9DS0(float * gbias, float * abias)
 {
 
 }
 
+uint16_t lsm9ds0_begin(enum gyro_scale gScl, enum accel_scale aScl, enum mag_scale mScl,
+		enum gyro_odr gODR, enum accel_odr aODR, enum mag_odr mODR)
+{
+	gScale = gScl;
+	aScale = aScl;
+	mScale = mScl;
 
+	// Once we have the scale values, we can calculate the resolution
+	// of each sensor. That's what these functions are for. One for each sensor
+	calcgRes(); // Calculate DPS / ADC tick, stored in gRes variable
+	calcmRes(); // Calculate Gs / ADC tick, stored in mRes variable
+	calcaRes(); // Calculate g / ADC tick, stored in aRes variable
+
+	uint8_t gTest = readByte(GYRO, WHO_AM_I_G);		// Read the gyro WHO_AM_I
+	uint8_t xmTest = readByte(ACCEL, WHO_AM_I_XM);	// Read the accel/mag WHO_AM_I
+	initGyro();
+	initAccel();
+	initMag();
+
+	return (xmTest << 8) | gTest;
+}
+
+float calcGyro(int16_t gyro)
+{
+	// Return the gyro raw reading times our pre-calculated DPS / (ADC tick):
+	return gRes * gyro;
+}
+
+float calcAccel(int16_t accel)
+{
+	// Return the accel raw reading times our pre-calculated g's / (ADC tick):
+	return aRes * accel;
+}
+
+float calcMag(int16_t mag)
+{
+	// Return the mag raw reading times our pre-calculated Gs / (ADC tick):
+	return mRes * mag;
+}

@@ -10,6 +10,10 @@ volatile unsigned char RXData = 0;
 volatile unsigned char TXData = 0;
 volatile unsigned int sent_data = 0;
 
+extern int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
+extern int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
+extern int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
+
 void initialize_clock()
 {
 	P9OUT |= BIT7;
@@ -42,6 +46,60 @@ void initialize_clock()
 		SFRIFG1 &= ~OFIFG;
 	}while (SFRIFG1&OFIFG);                   // Test oscillator fault flag
 	CSCTL0_H = 0;                             // Lock CS registers
+}
+
+void initialize_uart()
+{
+	 //Configure GPIO
+	P3SEL0 |= BIT4 | BIT5;                    // USCI_A1 UART operation using Backchannel
+	P3SEL1 &= ~(BIT4 | BIT5);
+
+/*
+ *  Baud Rate calculation
+ *  1000000/(16*9600) = 6.5104166666666667
+ *  Fractional portion = 0.5104166666666667
+ *	User's Guide Table 21-4: UCBRSx = 0x04
+ *	UCBRFx = int ( (0.5104166666666667)*16) = 8
+ */
+	// Configure USCI_A1 for UART mode
+	UCA1CTLW0 |= UCSWRST;                      // Put eUSCI in reset
+	//UCA1CTLW0 &= ~0x0010;
+	UCA1CTLW0 |= UCSSEL__SMCLK;               // CLK = SMCLK
+	UCA1BR0 = 6; //9600
+	UCA1BR1 = 0x00;
+	UCA1MCTLW |= UCOS16 | UCBRF_8 | 0x4900;
+	UCA1CTLW0 &= ~UCSWRST;                    // Initialize eUSCI
+}
+
+void print_uart(unsigned char *character) {
+	while (*character != '\0') {
+		while (!(UCA1IFG & UCTXIFG));
+    	UCA1TXBUF = *character++;
+	}
+}
+
+void print_uartn(unsigned char *character, unsigned int n) {
+	while (n--) {
+		while (!(UCA1IFG & UCTXIFG));
+    	UCA1TXBUF = *character++;
+	}
+}
+
+void print_uartc(unsigned char character) {
+	while (!(UCA1IFG & UCTXIFG));
+	UCA1TXBUF = character;
+
+}
+
+//From: http://users.ece.utexas.edu/~valvano/arm/UART.c
+void print_dec_uart(unsigned long n){
+// This function uses recursion to convert decimal number
+//   of unspecified length as an ASCII string
+  if(n >= 10){
+	  print_dec_uart(n/10);
+    n = n%10;
+  }
+  print_uartc(n+'0'); /* n is between 0 and 9 */
 }
 
 void initialize_spi()
@@ -107,46 +165,6 @@ int begin()
 	return (whoami == 0x49D4);
 }
 
-int read_gryo()
-{
-	uint8_t temp[6];
-
-	//Start communication
-	//gryo enable
-//	P1OUT &= ~BIT4;
-//	P3OUT |= BIT2;
-
-	//xm enable
-	P1OUT |= BIT4;
-	P3OUT &= ~BIT2;
-
-	RXData = 0xFF;
-	__delay_cycles(5000);
-	while (!(UCA0IFG & UCTXIFG));
-	UCA0TXBUF  =   (0xC0 | (OUT_X_L_G & 0x3F));
-
-	int i;
-	for (i = 0; i < 6; ++i) {
-		__delay_cycles(1000);
-		while (!(UCA0IFG & UCTXIFG));
-		UCA0TXBUF  =  0x00;
-
-		__delay_cycles(1000);
-		while (!(UCA0IFG & UCRXIFG));
-		RXData = UCA0RXBUF;
-		temp[i] = RXData;
-	}
-	//End communication
-	//disable gyro
-//	P1OUT |= BIT4;
-//	P3OUT &= ~BIT2;
-
-	//disable xm
-	P1OUT &= ~BIT4;
-	P3OUT |= BIT2;
-	return 0;
-}
-
 /*
  * main.c
  */
@@ -155,6 +173,8 @@ int main(void) {
 
     initialize_clock();
     initialize_spi();
+    initialize_uart();
+
     volatile unsigned int i;
 
     P1OUT |= LED0;
@@ -164,11 +184,17 @@ int main(void) {
 	P9DIR |= LED1;
 
 	if (!begin())
-		// Unable to initialize
+	{
+		print_uart("Unable to initialize LSM9DS0!\n");
+	} else {
+		print_uart("LSM9DS0 initialized!\n");
+	}
 
-	//initialize_gryo();
-	//read_gryo();
 	for(;;) {
+		readGyro();
+		print_uart("G:");
+		print_dec_uart(gx);
+		print_uart("\n");
 		P1OUT ^= LED0;				// Toggle P1.0 using exclusive-OR
 
 		i = 100000;                          // SW Delay
