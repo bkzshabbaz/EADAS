@@ -6,6 +6,7 @@
  */
 
 #include "LSM9DS0.h"
+#include <stdio.h>
 
 static float gRes, aRes, mRes;
 static enum gyro_scale gScale;
@@ -117,14 +118,14 @@ uint8_t readByte(enum chip_select cs, uint8_t subAddress)
 void writeByte(enum chip_select cs, uint8_t subAddress, uint8_t data)
 {
 	enable_chip(cs);
-
 	// If write, bit 0 (MSB) should be 0
 	// If single write, bit 1 should be 0
 	DELAY;
 	while (!(UCA0IFG & UCTXIFG));
-	UCA0TXBUF  	=   (0xC0 | (subAddress & 0x3F));
+	UCA0TXBUF  	=   (subAddress & 0x3F);
 
-	//TODO: Do we need to wait?
+	//TODO: For some reason, writes won't take affect unless we delay twice?
+	DELAY;
 	DELAY;
 	while (!(UCA0IFG & UCTXIFG));
 	UCA0TXBUF  		=   data; // Send data
@@ -297,6 +298,12 @@ void readGyro()
 	gx = (temp[1] << 8) | temp[0]; // Store x-axis values into gx
 	gy = (temp[3] << 8) | temp[2]; // Store y-axis values into gy
 	gz = (temp[5] << 8) | temp[4]; // Store z-axis values into gz
+
+	printf("G: %.2f", calcGyro(gx));
+	printf(", ");
+	printf("%.2f",calcGyro(gy));
+	printf(", ");
+	printf("%.2f\n",calcGyro(gz));
 }
 
 // readAccel() -- Read the accelerometer output registers.
@@ -310,11 +317,119 @@ void readAccel()
 	ax = (temp[1] << 8) | temp[0]; // Store x-axis values into ax
 	ay = (temp[3] << 8) | temp[2]; // Store y-axis values into ay
 	az = (temp[5] << 8) | temp[4]; // Store z-axis values into az
+
+	printf("A: %.2f", calcAccel(ax));
+	printf(", ");
+	printf("%.2f",calcAccel(ay));
+	printf(", ");
+	printf("%.2f\n",calcAccel(az));
 }
 
 void calLSM9DS0(float * gbias, float * abias)
 {
 
+}
+
+void setGyroODR(enum gyro_odr gRate)
+{
+	// We need to preserve the other bytes in CTRL_REG1_G. So, first read it:
+	uint8_t temp = readByte(GYRO, CTRL_REG1_G);
+	// Then mask out the gyro ODR bits:
+	temp &= 0xFF^(0xF << 4);
+	// Then shift in our new ODR bits:
+	temp |= (gRate << 4);
+	// And write the new register value back into CTRL_REG1_G:
+	writeByte(GYRO, CTRL_REG1_G, temp);
+}
+
+void setGyroScale(enum gyro_scale gScl)
+{
+	// We need to preserve the other bytes in CTRL_REG4_G. So, first read it:
+	uint8_t temp = readByte(GYRO, CTRL_REG4_G);
+	// Then mask out the gyro scale bits:
+	temp &= 0xFF^(0x3 << 4);
+	// Then shift in our new scale bits:
+	temp |= gScl << 4;
+	// And write the new register value back into CTRL_REG4_G:
+	writeByte(GYRO, CTRL_REG4_G, temp);
+
+	// We've updated the sensor, but we also need to update our class variables
+	// First update gScale:
+	gScale = gScl;
+	// Then calculate a new gRes, which relies on gScale being set correctly:
+	calcgRes();
+}
+
+void setAccelODR(enum accel_odr aRate)
+{
+	// We need to preserve the other bytes in CTRL_REG1_XM. So, first read it:
+	uint8_t temp = readByte(ACCEL, CTRL_REG1_XM);
+	// Then mask out the accel ODR bits:
+	temp &= 0xFF^(0xF << 4);
+	// Then shift in our new ODR bits:
+	temp |= (aRate << 4);
+	// And write the new register value back into CTRL_REG1_XM:
+	writeByte(ACCEL, CTRL_REG1_XM, temp);
+}
+
+void setAccelScale(enum accel_scale aScl)
+{
+	// We need to preserve the other bytes in CTRL_REG2_XM. So, first read it:
+	uint8_t temp = readByte(ACCEL, CTRL_REG2_XM);
+	// Then mask out the accel scale bits:
+	temp &= 0xFF^(0x3 << 3);
+	// Then shift in our new scale bits:
+	temp |= aScl << 3;
+	// And write the new register value back into CTRL_REG2_XM:
+	writeByte(ACCEL, CTRL_REG2_XM, temp);
+
+	// We've updated the sensor, but we also need to update our class variables
+	// First update aScale:
+	aScale = aScl;
+	// Then calculate a new aRes, which relies on aScale being set correctly:
+	calcaRes();
+}
+
+void setMagODR(enum mag_odr mRate)
+{
+	// We need to preserve the other bytes in CTRL_REG5_XM. So, first read it:
+	uint8_t temp = readByte(ACCEL, CTRL_REG5_XM);
+	// Then mask out the mag ODR bits:
+	temp &= 0xFF^(0x7 << 2);
+	// Then shift in our new ODR bits:
+	temp |= (mRate << 2);
+	// And write the new register value back into CTRL_REG5_XM:
+	writeByte(ACCEL, CTRL_REG5_XM, temp);
+}
+
+void setMagScale(enum mag_scale mScl)
+{
+	// We need to preserve the other bytes in CTRL_REG6_XM. So, first read it:
+	uint8_t temp = readByte(ACCEL, CTRL_REG6_XM);
+	// Then mask out the mag scale bits:
+	temp &= 0xFF^(0x3 << 5);
+	// Then shift in our new scale bits:
+	temp |= mScl << 5;
+	// And write the new register value back into CTRL_REG6_XM:
+	writeByte(ACCEL, CTRL_REG6_XM, temp);
+
+	// We've updated the sensor, but we also need to update our class variables
+	// First update mScale:
+	mScale = mScl;
+	// Then calculate a new mRes, which relies on mScale being set correctly:
+	calcmRes();
+}
+
+void setAccelABW(enum accel_abw abwRate)
+{
+	// We need to preserve the other bytes in CTRL_REG2_XM. So, first read it:
+	uint8_t temp = readByte(ACCEL, CTRL_REG2_XM);
+	// Then mask out the accel ABW bits:
+	temp &= 0xFF^(0x3 << 7);
+	// Then shift in our new ODR bits:
+	temp |= (abwRate << 7);
+	// And write the new register value back into CTRL_REG2_XM:
+	writeByte(ACCEL, CTRL_REG2_XM, temp);
 }
 
 uint16_t lsm9ds0_begin(enum gyro_scale gScl, enum accel_scale aScl, enum mag_scale mScl,
@@ -330,12 +445,27 @@ uint16_t lsm9ds0_begin(enum gyro_scale gScl, enum accel_scale aScl, enum mag_sca
 	calcmRes(); // Calculate Gs / ADC tick, stored in mRes variable
 	calcaRes(); // Calculate g / ADC tick, stored in aRes variable
 
+	/*
+	 * Use the following code to verify write to a register.
+	volatile uint8_t odr1 = readByte(GYRO,CTRL_REG1_G);
+	writeByte(GYRO,CTRL_REG1_G, 0xFF);
+	volatile uint8_t odr2 = readByte(GYRO,CTRL_REG1_G);
+	*/
+
 	uint8_t gTest = readByte(GYRO, WHO_AM_I_G);		// Read the gyro WHO_AM_I
 	uint8_t xmTest = readByte(ACCEL, WHO_AM_I_XM);	// Read the accel/mag WHO_AM_I
-	initGyro();
-	initAccel();
-	initMag();
 
+	initGyro();
+	setGyroODR(gODR);
+	setGyroScale(gScale);
+
+	initAccel();
+	setAccelODR(aODR); // Set the accel data rate.
+	setAccelScale(aScale); // Set the accel range.
+
+	initMag();
+	setMagODR(mODR); // Set the magnetometer output data rate.
+	setMagScale(mScale); // Set the magnetometer's range.
 	return (xmTest << 8) | gTest;
 }
 

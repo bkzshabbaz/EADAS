@@ -1,5 +1,7 @@
 #include <msp430.h> 
 #include "LSM9DS0.h"
+#include <stdio.h>
+
 /*
  * Some code used from Sparkfun's LSM9DS0 library.
  */
@@ -104,7 +106,6 @@ void print_dec_uart(unsigned long n){
 
 void initialize_spi()
 {
-
 	// Configure USCI_A0 for SPI operation
 	UCA0CTLW0 = UCSWRST;                      // **Put state machine in reset**
 										// 4-pin, 8-bit SPI master
@@ -151,6 +152,11 @@ void __attribute__ ((interrupt(USCI_A0_VECTOR))) USCI_A0_ISR (void)
   }
 }
 
+//int putchar(int c) {
+//	while (!(UCA1IFG & UCTXIFG));
+//		UCA1TXBUF = c;
+//}
+
 int begin()
 {
 	enum gyro_scale gScl 	= G_SCALE_245DPS;
@@ -185,16 +191,15 @@ int main(void) {
 
 	if (!begin())
 	{
-		print_uart("Unable to initialize LSM9DS0!\n");
+		printf("Unable to initialize LSM9DS0!\n");
 	} else {
-		print_uart("LSM9DS0 initialized!\n");
+		printf("LSM9DS0 initialized!\n");
 	}
+
 
 	for(;;) {
 		readGyro();
-		print_uart("G:");
-		print_dec_uart(gx);
-		print_uart("\n");
+		readAccel();
 		P1OUT ^= LED0;				// Toggle P1.0 using exclusive-OR
 
 		i = 100000;                          // SW Delay
