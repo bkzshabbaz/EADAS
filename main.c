@@ -12,9 +12,9 @@ volatile unsigned char RXData = 0;
 volatile unsigned char TXData = 0;
 volatile unsigned int sent_data = 0;
 
-extern int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
-extern int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
-extern int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
+//extern int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
+//extern int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
+//extern int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
 
 void initialize_clock()
 {
@@ -151,11 +151,6 @@ void __attribute__ ((interrupt(USCI_A0_VECTOR))) USCI_A0_ISR (void)
     default: break;
   }
 }
-
-//int putchar(int c) {
-//	while (!(UCA1IFG & UCTXIFG));
-//		UCA1TXBUF = c;
-//}
 
 int begin()
 {

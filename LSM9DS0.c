@@ -12,7 +12,6 @@ static float gRes, aRes, mRes;
 static enum gyro_scale gScale;
 static enum accel_scale aScale;
 static enum mag_scale mScale;
-#define DELAY __delay_cycles(1000)
 
 static void enable_chip(enum chip_select cs)
 {
@@ -82,22 +81,23 @@ void readBytes(enum chip_select cs, uint8_t subAddress,
 		uint8_t * dest, uint8_t count)
 {
 	enable_chip(cs);
+	uint8_t temp;
 
-	DELAY;
 	while (!(UCA0IFG & UCTXIFG));
 	if (count > 1)
 		UCA0TXBUF  	=   (0xC0 | (subAddress & 0x3F));
 	else
 		UCA0TXBUF  	=   (0x80 | (subAddress & 0x3F));
 
+	while (!(UCA0IFG & UCRXIFG));
+	temp = UCA0RXBUF;
+
 	int i;
 	for (i=0; i<count; i++)
 	{
-		DELAY;
 		while (!(UCA0IFG & UCTXIFG));
 		UCA0TXBUF  =  0x00;
 
-		DELAY;
 		while (!(UCA0IFG & UCRXIFG));
 		dest[i] = UCA0RXBUF;
 	}
@@ -118,17 +118,20 @@ uint8_t readByte(enum chip_select cs, uint8_t subAddress)
 void writeByte(enum chip_select cs, uint8_t subAddress, uint8_t data)
 {
 	enable_chip(cs);
+	uint8_t temp;
 	// If write, bit 0 (MSB) should be 0
 	// If single write, bit 1 should be 0
-	DELAY;
 	while (!(UCA0IFG & UCTXIFG));
 	UCA0TXBUF  	=   (subAddress & 0x3F);
 
-	//TODO: For some reason, writes won't take affect unless we delay twice?
-	DELAY;
-	DELAY;
+	while (!(UCA0IFG & UCRXIFG));
+	temp = UCA0RXBUF;
+
 	while (!(UCA0IFG & UCTXIFG));
 	UCA0TXBUF  		=   data; // Send data
+
+	while (!(UCA0IFG & UCRXIFG));
+	temp = UCA0RXBUF;
 
 	disable_chip(cs);
 }
