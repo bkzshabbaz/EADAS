@@ -205,9 +205,9 @@ enum mag_odr
 // axis. Call readGyro(), readAccel(), and readMag() first, before using
 // these variables!
 // These values are the RAW signed 16-bit readings from the sensors.
-volatile int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
-volatile int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
-volatile int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
+int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
+int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
+int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
 
 //	float abias[3];
 //	float gbias[3];

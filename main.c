@@ -12,9 +12,9 @@ volatile unsigned char RXData = 0;
 volatile unsigned char TXData = 0;
 volatile unsigned int sent_data = 0;
 
-//extern int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
-//extern int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
-//extern int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
+extern int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
+extern int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
+extern int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
 
 void initialize_clock()
 {
@@ -194,12 +194,26 @@ int main(void) {
 
 	for(;;) {
 		readGyro();
+		printf("G: %.2f", calcGyro(gx));
+		printf(", ");
+		printf("%.2f",calcGyro(gy));
+		printf(", ");
+		printf("%.2f\n",calcGyro(gz));
+
+		/*
+		 * The accelerometer will read 1g when for an axis that's
+		 * vertical.
+		 */
 		readAccel();
+		printf("A: %.2f", calcAccel(ax));
+		printf(", ");
+		printf("%.2f",calcAccel(ay));
+		printf(", ");
+		printf("%.2f\n",calcAccel(az));
+		//TODO: Update the LCD with status information
+		//TODO: use an interrupt to signal alarm.
 		P1OUT ^= LED0;				// Toggle P1.0 using exclusive-OR
 
-		i = 100000;                          // SW Delay
-		do i--;
-		while(i != 0);
 	}
 	return 0;
 }

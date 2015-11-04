@@ -3,6 +3,17 @@
  *
  *  Created on: Oct 30, 2015
  *      Author: sammy
+ *      Connection:
+ *
+ *      LSM9DS0 ------------- MSP430FR6989
+ *      CSG     ------------- P1.4
+ *      CSXM    ------------- P3.2
+ *      SDOG    ------------- P2.1
+ *      SDOXM   ------------- P2.1
+ *      SCL     ------------- P1.5
+ *      SDA     ------------- P2.0
+ *      VDD     ------------- 3v3
+ *      GND     ------------- GND
  */
 
 #include "LSM9DS0.h"
@@ -301,12 +312,6 @@ void readGyro()
 	gx = (temp[1] << 8) | temp[0]; // Store x-axis values into gx
 	gy = (temp[3] << 8) | temp[2]; // Store y-axis values into gy
 	gz = (temp[5] << 8) | temp[4]; // Store z-axis values into gz
-
-	printf("G: %.2f", calcGyro(gx));
-	printf(", ");
-	printf("%.2f",calcGyro(gy));
-	printf(", ");
-	printf("%.2f\n",calcGyro(gz));
 }
 
 // readAccel() -- Read the accelerometer output registers.
@@ -320,12 +325,6 @@ void readAccel()
 	ax = (temp[1] << 8) | temp[0]; // Store x-axis values into ax
 	ay = (temp[3] << 8) | temp[2]; // Store y-axis values into ay
 	az = (temp[5] << 8) | temp[4]; // Store z-axis values into az
-
-	printf("A: %.2f", calcAccel(ax));
-	printf(", ");
-	printf("%.2f",calcAccel(ay));
-	printf(", ");
-	printf("%.2f\n",calcAccel(az));
 }
 
 void calLSM9DS0(float * gbias, float * abias)
