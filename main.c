@@ -1,6 +1,7 @@
 #include <msp430.h> 
 #include "LSM9DS0.h"
 #include <stdio.h>
+#include <math.h>
 
 /*
  * Some code used from Sparkfun's LSM9DS0 library.
@@ -194,22 +195,22 @@ int main(void) {
 
 	for(;;) {
 		readGyro();
-		printf("G: %.2f", calcGyro(gx));
+		printf("G: %.2f", fabs(calcGyro(gx)));
 		printf(", ");
-		printf("%.2f",calcGyro(gy));
+		printf("%.2f",fabs(calcGyro(gy)));
 		printf(", ");
-		printf("%.2f\n",calcGyro(gz));
+		printf("%.2f\n",fabs(calcGyro(gz)));
 
 		/*
 		 * The accelerometer will read 1g when for an axis that's
 		 * vertical.
 		 */
 		readAccel();
-		printf("A: %.2f", calcAccel(ax));
+		printf("A: %.2f", fabs(calcAccel(ax)));
 		printf(", ");
-		printf("%.2f",calcAccel(ay));
+		printf("%.2f",fabs(calcAccel(ay)));
 		printf(", ");
-		printf("%.2f\n",calcAccel(az));
+		printf("%.2f\n",fabs(calcAccel(az)));
 		//TODO: Update the LCD with status information
 		//TODO: use an interrupt to signal alarm.
 		P1OUT ^= LED0;				// Toggle P1.0 using exclusive-OR
