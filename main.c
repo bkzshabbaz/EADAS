@@ -13,6 +13,9 @@ volatile unsigned char RXData = 0;
 volatile unsigned char TXData = 0;
 volatile unsigned int sent_data = 0;
 
+int alarm_fall 		= 0;	//Alarm because a fall was detected
+int alarm_heartrate = 0;	//Alarm because a change in heartrate was detected
+
 extern int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
 extern int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
 extern int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
@@ -38,7 +41,7 @@ void initialize_clock()
 
 	// XT1 Setup
 	CSCTL0_H = CSKEY >> 8;                    // Unlock CS registers
-	CSCTL1 = DCOFSEL_0;                       // Set DCO to 1MHz
+	CSCTL1 = DCOFSEL_6;							// Set DCO to 8MHz
 	CSCTL1 &= ~DCORSEL;
 	CSCTL2 = SELA__LFXTCLK | SELS__DCOCLK | SELM__DCOCLK;
 	CSCTL3 = DIVA__1 | DIVS__1 | DIVM__1;     // Set all dividers
@@ -57,20 +60,16 @@ void initialize_uart()
 	P3SEL0 |= BIT4 | BIT5;                    // USCI_A1 UART operation using Backchannel
 	P3SEL1 &= ~(BIT4 | BIT5);
 
-/*
- *  Baud Rate calculation
- *  1000000/(16*9600) = 6.5104166666666667
- *  Fractional portion = 0.5104166666666667
- *	User's Guide Table 21-4: UCBRSx = 0x04
- *	UCBRFx = int ( (0.5104166666666667)*16) = 8
- */
-	// Configure USCI_A1 for UART mode
-	UCA1CTLW0 |= UCSWRST;                      // Put eUSCI in reset
-	//UCA1CTLW0 &= ~0x0010;
-	UCA1CTLW0 |= UCSSEL__SMCLK;               // CLK = SMCLK
-	UCA1BR0 = 6; //9600
+	// Baud Rate calculation
+	// 8000000/(16*9600) = 52.083
+	// Fractional portion = 0.083
+	// User's Guide Table 21-4: UCBRSx = 0x04
+	// UCBRFx = int ( (52.083-52)*16) = 1
+	UCA1BR0 = 52;                             // 8000000/16/9600
 	UCA1BR1 = 0x00;
-	UCA1MCTLW |= UCOS16 | UCBRF_8 | 0x4900;
+	UCA1MCTLW |= UCOS16 | UCBRF_1 | 0x4900;
+	UCA1CTLW0 |= UCSWRST;                      // Put eUSCI in reset
+	UCA1CTLW0 |= UCSSEL__SMCLK;               // CLK = SMCLK
 	UCA1CTLW0 &= ~UCSWRST;                    // Initialize eUSCI
 }
 
@@ -194,23 +193,24 @@ int main(void) {
 
 
 	for(;;) {
+		print_uart("printing\n");
 		readGyro();
-		printf("G: %.2f", fabs(calcGyro(gx)));
-		printf(", ");
-		printf("%.2f",fabs(calcGyro(gy)));
-		printf(", ");
-		printf("%.2f\n",fabs(calcGyro(gz)));
+//		printf("G: %.2f", fabs(calcGyro(gx)));
+//		printf(", ");
+//		printf("%.2f",fabs(calcGyro(gy)));
+//		printf(", ");
+//		printf("%.2f\n",fabs(calcGyro(gz)));
 
 		/*
 		 * The accelerometer will read 1g when for an axis that's
 		 * vertical.
 		 */
 		readAccel();
-		printf("A: %.2f", fabs(calcAccel(ax)));
-		printf(", ");
-		printf("%.2f",fabs(calcAccel(ay)));
-		printf(", ");
-		printf("%.2f\n",fabs(calcAccel(az)));
+//		printf("A: %.2f", fabs(calcAccel(ax)));
+//		printf(", ");
+//		printf("%.2f",fabs(calcAccel(ay)));
+//		printf(", ");
+//		printf("%.2f\n",fabs(calcAccel(az)));
 		//TODO: Update the LCD with status information
 		//TODO: use an interrupt to signal alarm.
 		P1OUT ^= LED0;				// Toggle P1.0 using exclusive-OR
