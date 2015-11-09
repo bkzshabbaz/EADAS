@@ -178,7 +178,7 @@ int main(void) {
 
     volatile unsigned int i;
 
-    P1OUT |= LED0;
+    P1OUT &= ~LED0;
 	P1DIR |= LED0; //LED
 
 	P9OUT |= LED1;
@@ -195,17 +195,19 @@ int main(void) {
 	for(;;) {
 		print_uart("printing\n");
 		readGyro();
-//		printf("G: %.2f", fabs(calcGyro(gx)));
-//		printf(", ");
-//		printf("%.2f",fabs(calcGyro(gy)));
-//		printf(", ");
-//		printf("%.2f\n",fabs(calcGyro(gz)));
+		if (alarm_fall)
+			P1OUT |= LED0;
+		printf("G: %.2f", fabs(calcGyro(gx)));
+		printf(", ");
+		printf("%.2f",fabs(calcGyro(gy)));
+		printf(", ");
+		printf("%.2f\n",fabs(calcGyro(gz)));
 
 		/*
 		 * The accelerometer will read 1g when for an axis that's
 		 * vertical.
 		 */
-		readAccel();
+		//readAccel();
 //		printf("A: %.2f", fabs(calcAccel(ax)));
 //		printf(", ");
 //		printf("%.2f",fabs(calcAccel(ay)));
@@ -213,7 +215,7 @@ int main(void) {
 //		printf("%.2f\n",fabs(calcAccel(az)));
 		//TODO: Update the LCD with status information
 		//TODO: use an interrupt to signal alarm.
-		P1OUT ^= LED0;				// Toggle P1.0 using exclusive-OR
+						// Toggle P1.0 using exclusive-OR
 
 	}
 	return 0;

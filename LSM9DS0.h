@@ -24,6 +24,8 @@ Distributed as-is; no warranty is given.
 #include <stdint.h>
 #include <msp430.h>
 
+#define GYRO_THRESHOLD 200	//Threshold to determine if fallen
+
 ////////////////////////////
 // LSM9DS0 Gyro Registers //
 ////////////////////////////

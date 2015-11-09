@@ -23,6 +23,7 @@ static float gRes, aRes, mRes;
 static enum gyro_scale gScale;
 static enum accel_scale aScale;
 static enum mag_scale mScale;
+extern int alarm_fall;
 
 static void enable_chip(enum chip_select cs)
 {
@@ -312,6 +313,14 @@ void readGyro()
 	gx = (temp[1] << 8) | temp[0]; // Store x-axis values into gx
 	gy = (temp[3] << 8) | temp[2]; // Store y-axis values into gy
 	gz = (temp[5] << 8) | temp[4]; // Store z-axis values into gz
+
+	if (fabs(calcGyro(gx)) > GYRO_THRESHOLD
+	 || fabs(calcGyro(gy)) > GYRO_THRESHOLD
+	 || fabs(calcGyro(gz)) > GYRO_THRESHOLD) {
+		alarm_fall = 1;
+		printf("Fall detected\n");
+	}
+
 }
 
 // readAccel() -- Read the accelerometer output registers.
