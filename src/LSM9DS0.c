@@ -18,6 +18,7 @@
 
 #include "LSM9DS0.h"
 #include <stdio.h>
+#include "lcd.h"
 
 static float gRes, aRes, mRes;
 static enum gyro_scale gScale;
@@ -318,6 +319,7 @@ void readGyro()
 	 || fabs(calcGyro(gy)) > GYRO_THRESHOLD
 	 || fabs(calcGyro(gz)) > GYRO_THRESHOLD) {
 		alarm_fall = 1;
+		lcdPrint("FALL!", 0, 1, 5);
 #ifdef DEBUG
 		printf("Fall detected\n");
 #endif

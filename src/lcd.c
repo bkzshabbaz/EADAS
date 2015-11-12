@@ -151,18 +151,9 @@ void lcdPrint(char *c, int alphaNum, uint16_t start, uint16_t end) {
 
 void lcdIOInit(void) {
 
-	//Initialize GPIO for LCD pins
-	P1DIR &= ~((1 << 4) + (1 << 5));
-	P1OUT &= ~((1 << 4) + (1 << 5));
-	P1REN |= (1 << 4) + (1 << 5);
-
 	P2DIR &= ~((1 << 4) + (1 << 5) + (1 << 6) + (1 << 7));
 	P2OUT &= ~((1 << 4) + (1 << 5) + (1 << 6) + (1 << 7));
 	P2REN |= (1 << 4) + (1 << 5) + (1 << 6) + (1 << 7);
-
-	P3DIR = 0x00;
-	P3OUT = 0x00;
-	P3REN = 0xFF;
 
 	P4DIR &= ~((1 << 0) + (1 << 1) + (1 << 4) + (1 << 5) + (1 << 6) + (1 << 7));
 	P4OUT &= ~((1 << 0) + (1 << 1) + (1 << 4) + (1 << 5) + (1 << 6) + (1 << 7));
@@ -188,7 +179,7 @@ void lcdIOInit(void) {
 	P10OUT &= ~((1 << 0) + (1 << 1) + (1 << 2));
 	P10REN |= (1 << 0) + (1 << 1) + (1 << 2);
 
-	lcdTimerInit();
+	//lcdTimerInit();
 
 }
 
@@ -205,13 +196,18 @@ void lcdSegOff(void) {
 	LCDCCTL0 &= ~LCDSON; //turn off LCD segments
 }
 
-void lcdTimerInit(void){
-
-	__disable_interrupt();
-	TA0CTL |= TACLR;
-	TA0CTL |= TASSEL__SMCLK + ID__8 + MC__UP;
-	TA0CCR0 = 31250;
-	TA0CTL |= TAIE;
-
-	__enable_interrupt();
-}
+//void lcdTimerInit(void){
+//
+//	__disable_interrupt();
+//	TA0CTL |= TACLR;
+//	TA0CTL |= TASSEL__SMCLK + ID__8 + MC__UP;
+//	TA0CCR0 = 31250;
+//	TA0CTL |= TAIE;
+//
+//	__enable_interrupt();
+//}
+//#pragma vector = TIMER0_A0_VECTOR
+//__interrupt void timerISR(void){
+//
+//	P1OUT ^= (1<<0);
+//}
