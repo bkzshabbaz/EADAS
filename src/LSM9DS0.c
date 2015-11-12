@@ -318,7 +318,9 @@ void readGyro()
 	 || fabs(calcGyro(gy)) > GYRO_THRESHOLD
 	 || fabs(calcGyro(gz)) > GYRO_THRESHOLD) {
 		alarm_fall = 1;
+#ifdef DEBUG
 		printf("Fall detected\n");
+#endif
 	}
 
 }
