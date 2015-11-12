@@ -2,6 +2,7 @@
 #include "LSM9DS0.h"
 #include <stdio.h>
 #include <math.h>
+#include "src/lcd.h"
 
 /*
  * Some code used from Sparkfun's LSM9DS0 library.
@@ -175,6 +176,9 @@ int main(void) {
     initialize_clock();
     initialize_spi();
     initialize_uart();
+    lcdInit();
+
+    lcdPrint("hey",0,2,4);
 
     volatile unsigned int i;
 

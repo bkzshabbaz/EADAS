@@ -1,0 +1,1 @@
+"./LSM9DS0.obj" "./main.obj" "./src/lcd.obj" "../lnk_msp430fr6989.cmd" -llibmpu_init.a -l"libmath.a" -l"libc.a" 
