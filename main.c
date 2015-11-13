@@ -21,6 +21,9 @@ extern int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
 extern int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
 #endif
 
+unsigned char buffer[100];
+unsigned int current_index = 0;
+
 int begin()
 {
 	enum gyro_scale gScl 	= G_SCALE_245DPS;
@@ -48,6 +51,9 @@ int main(void) {
 
     lcdPrint("hey",0,2,4);
 
+	UCA1IE |= UCTXIE;
+    __bis_SR_register(GIE);
+
     volatile unsigned int i;
 
     P1OUT &= ~LED0;
@@ -63,7 +69,7 @@ int main(void) {
 		printf("LSM9DS0 initialized!\n");
 	}
 
-
+	//print_uart("Hello world!");
 	for(;;) {
 		readGyro();
 		if (alarm_fall) //TODO: Move this to an ISR based on a GPIO edge

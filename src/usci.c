@@ -5,6 +5,9 @@ volatile unsigned char RXData = 0;
 volatile unsigned char TXData = 0;
 volatile unsigned int sent_data = 0;
 
+char *command = "AT\rAT+CGPSPWR?\r\n";
+extern unsigned char buffer[];
+extern unsigned int current_index;
 /*
  * --------------------------------------------UART---------------------------------------------------------------
  */
@@ -25,6 +28,8 @@ void initialize_uart()
 	UCA1CTLW0 |= UCSWRST;                      // Put eUSCI in reset
 	UCA1CTLW0 |= UCSSEL__SMCLK;               // CLK = SMCLK
 	UCA1CTLW0 &= ~UCSWRST;                    // Initialize eUSCI
+
+	UCA1IE |= UCRXIE;                         // Enable USCI_A0 RX interrupt
 }
 
 void print_uart(unsigned char *character) {
@@ -76,5 +81,25 @@ void initialize_spi()
 	UCA0BR1 = 0;                              //
 	UCA0MCTLW = 0;                            // No modulation
 	UCA0CTLW0 &= ~UCSWRST;                    // **Initialize USCI state machine**
-	UCA0IE |= UCRXIE | UCTXIE;                         // Enable USCI_A0 RX interrupt
+	//UCA0IE |= UCRXIE | UCTXIE;                         // Enable USCI_A0 RX interrupt
+}
+
+#pragma vector=USCI_A1_VECTOR
+__interrupt void USCI_A1_ISR(void)
+{
+  switch(__even_in_range(UCA1IV, USCI_UART_UCTXCPTIFG))
+  {
+    case USCI_NONE: break;
+    case USCI_UART_UCRXIFG:
+    	buffer[current_index++] = UCA1RXBUF;
+		break;
+    case USCI_UART_UCTXIFG:
+    	if (*command != '\0')
+    		UCA1TXBUF = *command++;
+    	else
+    		UCA1IE &= ~UCTXIE;
+		break;
+    case USCI_UART_UCSTTIFG: break;
+    case USCI_UART_UCTXCPTIFG: break;
+  }
 }
