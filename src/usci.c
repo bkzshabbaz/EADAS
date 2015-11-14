@@ -5,7 +5,9 @@ volatile unsigned char RXData = 0;
 volatile unsigned char TXData = 0;
 volatile unsigned int sent_data = 0;
 
-char *command = "AT\rAT+CGPSPWR?\r\n";
+//char *command = "AT\rAT+CGPSPWR?\r";
+//char *command = "AT\rAT+CGPSINF=0\r";
+char *command = "AT\rATI\r";
 extern unsigned char buffer[];
 extern unsigned int current_index;
 /*
@@ -18,13 +20,11 @@ void initialize_uart()
 	P3SEL1 &= ~(BIT4 | BIT5);
 
 	// Baud Rate calculation
-	// 8000000/(16*9600) = 52.083
-	// Fractional portion = 0.083
-	// User's Guide Table 21-4: UCBRSx = 0x04
-	// UCBRFx = int ( (52.083-52)*16) = 1
-	UCA1BR0 = 52;                             // 8000000/16/9600
+	// 8000000/(16*19200)
+	// http://software-dl.ti.com/msp430/msp430_public_sw/mcu/msp430/MSP430BaudRateConverter/index.html
+	UCA1BR0 = 26;
 	UCA1BR1 = 0x00;
-	UCA1MCTLW |= UCOS16 | UCBRF_1 | 0x4900;
+	UCA1MCTLW |= 0xD601;
 	UCA1CTLW0 |= UCSWRST;                      // Put eUSCI in reset
 	UCA1CTLW0 |= UCSSEL__SMCLK;               // CLK = SMCLK
 	UCA1CTLW0 &= ~UCSWRST;                    // Initialize eUSCI
