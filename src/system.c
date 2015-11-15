@@ -21,15 +21,25 @@ void system_init(void){
  */
 void initialize_clock()
 {
+
 	P9OUT |= BIT7;
 	P9DIR |= BIT7;
 
 	P1DIR |= BIT0 | BIT4; 		//Configure LED and Chip Select for Gyro
 	P3DIR |= BIT2;				//Configure Chip Select for XM
 
-	P1SEL1 |= BIT5;                    // Configure sclk
+	P1SEL1 |= BIT5;             // Configure sclk
 	P1SEL1 &= ~ BIT4;
 	P3SEL1 &= ~BIT2;
+
+	//Push button
+	P1DIR &= ~BIT2;			//Button as input
+	P1REN |= BIT2;			//Enable pull up resistor
+	P1IE |= BIT2;			//Enable interrupt for button
+	P1IFG &= ~BIT2;			//Clear interrupt
+	P1IES &= ~BIT2;			//Set edge for interrupt
+	P1SEL0 &= ~BIT2;		//Set GPIO
+	P1SEL1 &= ~BIT2;
 
 	P2SEL0 |= BIT0 | BIT1;                    // Configure SOMI and MISO
 	PJSEL0 |= BIT4 | BIT5;                    // For XT1
@@ -51,4 +61,16 @@ void initialize_clock()
 		SFRIFG1 &= ~OFIFG;
 	}while (SFRIFG1&OFIFG);                   // Test oscillator fault flag
 	CSCTL0_H = 0;                             // Lock CS registers
+}
+
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(void)
+{
+	extern int alarm_heartrate;
+	extern int alarm_fall;
+	//Reset button detected.  Clear fall flags.
+	alarm_heartrate = 0;
+	alarm_fall = 0;
+	P1IFG &= ~BIT2;
+	P1OUT &= ~LED0;
 }
