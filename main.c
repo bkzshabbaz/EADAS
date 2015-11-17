@@ -1,3 +1,19 @@
+/*	EADAS
+ * 	Peripheral Usage
+ * 		Pulse Sensor
+ * 			- P8.2
+ * 			- Timer1_A1
+ * 			- ADC Channel A7
+ * 			- P9.7 (Will be changing to heart icon on LCD)
+ * 		Gyro
+ *
+ * 		LCD
+ *
+ * 		GSM Module
+ *
+ *
+ */
+
 #include <msp430.h> 
 #include "LSM9DS0.h"
 #include <stdio.h>

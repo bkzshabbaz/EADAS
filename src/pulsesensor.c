@@ -7,10 +7,11 @@
 #include <msp430.h>
 #include "pulsesensor.h"
 
+
 volatile int i=0,beatinterval=0,bpm=0,flagup = 1;
 volatile unsigned int result,highp=0,lowp=4096,avp=0,time=0;
 char u_str[50];
-unsigned int busy = 0;  //TODO: Should this be defined here?
+
 
 void initialize_timer()
 {
@@ -46,8 +47,7 @@ __interrupt void Timer1_A1 (void)
 	}
 			i++;		// Toggle P1.0 using exclusive-OR
 	ADC12CTL0 |= ADC12SC;		// Trigger Conversion
-	busy = 1;
-	while(ADC12CTL1 & ADC12BUSY);	// Trigger a flag do rest of work outside ISR.
+	while(ADC12CTL1 & ADC12BUSY);	// TODO : Change code to so that we dont have to keep polling
 	result = ADC12MEM0&0x0FFF;
 
 	if(result>highp)
@@ -73,8 +73,8 @@ __interrupt void Timer1_A1 (void)
 
 
 	bpm = 6000/(2*beatinterval);
-	sprintf(u_str,"%d  %d  %d\n\r",bpm,flagup,result); //TODO: remove this and print_uart
-	print_uart(u_str);
+//	sprintf(u_str,"%d  %d  %d\n\r",bpm,flagup,result); //TODO: remove this and print_uart
+//	print_uart(u_str);
 	switch(TA1IV);				// Read and Clear Interrupt flags
 }
 
