@@ -1,5 +1,5 @@
 #include <msp430.h> 
-#include "LSM9DS0.h"
+#include "SparkFunLSM9DS1.h"
 #include <stdio.h>
 #include <math.h>
 #include "usci.h"
@@ -27,14 +27,8 @@ unsigned int current_index = 0;
 
 int begin()
 {
-	enum gyro_scale gScl 	= G_SCALE_245DPS;
-	enum accel_scale aScl 	= A_SCALE_2G;
-	enum mag_scale mScl 	= M_SCALE_2GS;
-	enum gyro_odr gODR 		= G_ODR_95_BW_125;
-	enum accel_odr aODR 	= A_ODR_50;
-	enum mag_odr mODR 		= M_ODR_50;
-
-	volatile uint16_t whoami = lsm9ds0_begin(gScl, aScl, mScl, gODR, aODR, mODR);
+	lsm9ds1_begin();
+	volatile uint16_t whoami = lsm9ds1_begin();
 
 	return (whoami == 0x49D4);
 }
