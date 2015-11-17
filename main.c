@@ -64,11 +64,9 @@ int main(void) {
 		printf("LSM9DS0 initialized!\n");
 	}
 
-	//print_uart("Hello world!");
 	for(;;) {
 		readGyro();
-		if (alarm_fall) { //TODO: Move this to an ISR based on a GPIO edge
-			P1OUT |= LED0;
+		if (alarm_fall) {
 			lcdPrint("FALL", 0, 1, 4);
 		} else {
 			lcdPrint("GOOD", 0, 1, 4);
@@ -92,8 +90,7 @@ int main(void) {
 //		printf(", ");
 //		printf("%.2f\n",fabs(calcAccel(az)));
 		//TODO: Update the LCD with status information
-		//TODO: use an interrupt to signal alarm.
-						// Toggle P1.0 using exclusive-OR
+
 #endif
 	}
 	return 0;
