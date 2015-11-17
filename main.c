@@ -49,6 +49,7 @@ int main(void) {
 
 	UCA1IE |= UCTXIE;		//Turn on TX interrupts and send the command to UART.
     __bis_SR_register(GIE);
+    __no_operation();
 
     P1OUT &= ~LED0;
 	P1DIR |= LED0;
