@@ -14,6 +14,7 @@
 
 int alarm_fall 		= 0;	//Alarm because a fall was detected
 int alarm_heartrate = 0;	//Alarm because a change in heartrate was detected
+int distress_sent 	= 0;		//Flag to indicate whether we've sent a distress signal
 
 #ifdef DEBUG
 extern int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
@@ -44,20 +45,13 @@ int begin()
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
 
-    initialize_clock();
-    initialize_spi();
-    initialize_uart();
-    lcdInit();
+    system_init();
 
-    lcdPrint("hey",0,2,4);
-
-	UCA1IE |= UCTXIE;
+	UCA1IE |= UCTXIE;		//Turn on TX interrupts and send the command to UART.
     __bis_SR_register(GIE);
 
-    volatile unsigned int i;
-
     P1OUT &= ~LED0;
-	P1DIR |= LED0; //LED
+	P1DIR |= LED0;
 
 	P9OUT |= LED1;
 	P9DIR |= LED1;
@@ -72,8 +66,12 @@ int main(void) {
 	//print_uart("Hello world!");
 	for(;;) {
 		readGyro();
-		if (alarm_fall) //TODO: Move this to an ISR based on a GPIO edge
+		if (alarm_fall) { //TODO: Move this to an ISR based on a GPIO edge
 			P1OUT |= LED0;
+			lcdPrint("FALL", 0, 1, 4);
+		} else {
+			lcdPrint("GOOD", 0, 1, 4);
+		}
 
 #ifdef DEBUG
 		printf("G: %.2f", fabs(calcGyro(gx)));
