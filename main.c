@@ -53,6 +53,7 @@ int main(void) {
 
 	UCA1IE |= UCTXIE;
     __bis_SR_register(GIE);
+    __no_operation();
 
     volatile unsigned int i;
 
