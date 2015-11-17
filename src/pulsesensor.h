@@ -1,7 +1,15 @@
-#ifndef _PULSESENSOR_H_
-#define _PULSESENSOR_H_
+/*
+ * pulsesensor.h
+ *
+ *  Created on: Nov 16, 2015
+ *      Author: Abhimanyu
+ */
 
-void initialize_timer();
-void initialize_adc();
+#ifndef SRC_PULSESENSOR_H_
+#define SRC_PULSESENSOR_H_
 
-#endif /* _PULSESENSOR_H_ */
+void initialize_timer(void);
+void initialize_adc(void);
+
+
+#endif /* SRC_PULSESENSOR_H_ */

@@ -14,8 +14,8 @@ void system_init(void){
 	initialize_clock();
 	initialize_spi();
 	initialize_uart();
-	//initialize_timer();
-	//initialize_adc();
+	initialize_timer();
+	initialize_adc();
 	lcdInit();
 }
 
