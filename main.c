@@ -27,7 +27,7 @@ unsigned int current_index = 0;
 
 int begin()
 {
-	lsm9ds1_begin();
+	lsm9ds1_init();
 	volatile uint16_t whoami = lsm9ds1_begin();
 
 	return (whoami == 0x49D4);
@@ -42,7 +42,7 @@ int main(void) {
     system_init();
 
 	UCA1IE |= UCTXIE;		//Turn on TX interrupts and send the command to UART.
-    __bis_SR_register(GIE);
+    //__bis_SR_register(GIE);
     __no_operation();
 
     P1OUT &= ~LED0;
