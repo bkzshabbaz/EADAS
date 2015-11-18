@@ -152,15 +152,15 @@ uint16_t lsm9ds1_begin()
 	constrainScales();
 	// Once we have the scale values, we can calculate the resolution
 	// of each sensor. That's what these functions are for. One for each sensor
-	calcgRes(); // Calculate DPS / ADC tick, stored in gRes variable
-	calcmRes(); // Calculate Gs / ADC tick, stored in mRes variable
-	calcaRes(); // Calculate g / ADC tick, stored in aRes variable
+	//calcgRes(); // Calculate DPS / ADC tick, stored in gRes variable
+	//calcmRes(); // Calculate Gs / ADC tick, stored in mRes variable
+	//calcaRes(); // Calculate g / ADC tick, stored in aRes variable
 	
 	// To verify communication, we can read from the WHO_AM_I register of
 	// each device. Store those in a variable so we can return them.
-	uint8_t mTest = readByte(MAGNO, WHO_AM_I_M);		// Read the gyro WHO_AM_I
+	//uint8_t mTest = readByte(MAGNO, WHO_AM_I_M);		// Read the gyro WHO_AM_I
 	uint8_t xgTest = readByte(GYRO_X, WHO_AM_I_XG);	// Read the accel/mag WHO_AM_I
-	uint16_t whoAmICombined = (xgTest << 8) | mTest;
+	uint16_t whoAmICombined = (xgTest);// << 8) | mTest;
 	
 	if (whoAmICombined != ((WHO_AM_I_AG_RSP << 8) | WHO_AM_I_M_RSP))
 		return 0;
@@ -859,10 +859,8 @@ void readBytes(enum chip_select cs, uint8_t subAddress,
 	uint8_t temp;
 
 	while (!(UCA0IFG & UCTXIFG));
-	if (count > 1)
-		UCA0TXBUF  	=   (0xC0 | (subAddress & 0x3F));
-	else
-		UCA0TXBUF  	=   (0x80 | (subAddress & 0x3F));
+
+	UCA0TXBUF  	=   (0x80 | (subAddress & 0x3F));
 
 	while (!(UCA0IFG & UCRXIFG));
 	temp = UCA0RXBUF;

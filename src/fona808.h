@@ -1,6 +1,21 @@
 #ifndef FONA808_H_
 #define FONA808_H_
 
+#define AT 				"AT\r"
+#define ATINFO 			"ATI\r"
+#define MODULE_NAME 	"SIM800 R13.08"
+#define ATECHO_ON 		"ATE1\r"
+#define ATECHO_OFF 		"ATE0\r"
+#define ATGPS_ON 		"AT\rAT+CGPSPWR=1\r"
+#define ATGPS_OFF 		"AT\rAT+CGPSPWR=0\r"
+#define ATGPS_INFO 		"AT+CGPSINF=0\r"
+#define ATGPS_STATUS 	"AT+CGPSSTATUS?\r"
+#define ATSIM 			"AT+CCID\r"  //SIM number
+#define ATNETWORK 		"AT+COPS?\r"  //Get network
+#define ATBAT 			"AT+CBC\r"
+#define ATTEXT_MODE 	"AT+CMGF=1\r"
+#define ATSMS 			"ATCMGS=\""
+
 char * get_location();
 
 /*
