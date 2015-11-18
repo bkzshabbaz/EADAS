@@ -1,10 +1,6 @@
 #include <msp430.h>
 #include "usci.h"
 
-volatile unsigned char RXData = 0;
-volatile unsigned char TXData = 0;
-volatile unsigned int sent_data = 0;
-
 //char *command = "AT\rAT+CGPSPWR?\r";
 //char *command = "AT\rAT+CGPSINF=0\r";
 char *command = "AT\rATI\r";

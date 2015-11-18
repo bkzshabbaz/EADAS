@@ -8,6 +8,8 @@
 /**
  * Button 2 press ISR
  */
+#include <msp430.h>
+
 #pragma vector=PORT1_VECTOR
 __interrupt void Port_1(void)
 {
@@ -17,7 +19,7 @@ __interrupt void Port_1(void)
 	alarm_heartrate = 0;
 	alarm_fall = 0;
 	P1IFG &= ~BIT2;
-	P1OUT &= ~LED0;
+	P1OUT &= ~BIT7;
 }
 
 /*
@@ -26,6 +28,8 @@ __interrupt void Port_1(void)
 #pragma vector=TIMER1_A1_VECTOR
 __interrupt void Timer1_A1 (void)
 {
+	extern volatile int i,beatinterval,bpm,flagup;
+	extern volatile unsigned int result,highp,lowp,avp,time;
 	if(i>=750)
 	{
 		P1OUT ^= BIT0;
@@ -71,6 +75,10 @@ __interrupt void Timer1_A1 (void)
 #pragma vector=USCI_A1_VECTOR
 __interrupt void USCI_A1_ISR(void)
 {
+extern unsigned char buffer[];
+extern unsigned int current_index;
+extern char* command;
+
   switch(__even_in_range(UCA1IV, USCI_UART_UCTXCPTIFG))
   {
     case USCI_NONE: break;
