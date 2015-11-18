@@ -83,23 +83,3 @@ void initialize_spi()
 	UCA0CTLW0 &= ~UCSWRST;                    // **Initialize USCI state machine**
 	//UCA0IE |= UCRXIE | UCTXIE;                         // Enable USCI_A0 RX interrupt
 }
-
-#pragma vector=USCI_A1_VECTOR
-__interrupt void USCI_A1_ISR(void)
-{
-  switch(__even_in_range(UCA1IV, USCI_UART_UCTXCPTIFG))
-  {
-    case USCI_NONE: break;
-    case USCI_UART_UCRXIFG:
-    	buffer[current_index++] = UCA1RXBUF;
-		break;
-    case USCI_UART_UCTXIFG:
-    	if (*command != '\0')
-    		UCA1TXBUF = *command++;
-    	else
-    		UCA1IE &= ~UCTXIE;
-		break;
-    case USCI_UART_UCSTTIFG: break;
-    case USCI_UART_UCTXCPTIFG: break;
-  }
-}

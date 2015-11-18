@@ -83,9 +83,9 @@ int main(void) {
 	for(;;) {
 		readGyro();
 		if (alarm_fall) {
-			lcdPrint("FALL", 0, 1, 4);
+			lcdPrint("FALL", 1, 4);
 		} else {
-			lcdPrint("GOOD", 0, 1, 4);
+			lcdPrint("GOOD", 1, 4);
 		}
 
 #ifdef DEBUG

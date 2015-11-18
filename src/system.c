@@ -66,14 +66,3 @@ void initialize_clock()
 	CSCTL0_H = 0;                             // Lock CS registers
 }
 
-#pragma vector=PORT1_VECTOR
-__interrupt void Port_1(void)
-{
-	extern int alarm_heartrate;
-	extern int alarm_fall;
-	//Reset button detected.  Clear fall flags.
-	alarm_heartrate = 0;
-	alarm_fall = 0;
-	P1IFG &= ~BIT2;
-	P1OUT &= ~LED0;
-}
