@@ -3,12 +3,25 @@
 
 //char *command = "AT\rAT+CGPSPWR?\r";
 //char *command = "AT\rAT+CGPSINF=0\r";
-char *command = "AT\rATI\r";
 extern unsigned char buffer[];
+extern unsigned char send_buffer[];
 extern unsigned int current_index;
+extern unsigned int current_send;
 /*
  * --------------------------------------------UART---------------------------------------------------------------
  */
+void transmit_uart(char* str)
+{
+	int i = 0;
+	while (*str != '\0') {
+		send_buffer[i++] = *str++;
+	}
+	send_buffer[i] = '\0';
+	current_index = 0;
+    UCA1IE |= UCTXIE;
+	UCA1TXBUF = send_buffer[current_send++];
+}
+
 void initialize_uart()
 {
 	 //Configure GPIO
@@ -73,9 +86,7 @@ void initialize_spi()
 	UCA0CTLW0 |= UCMST | UCSYNC | UCCKPL | UCMSB | UCMODE_1 | UCSTEM;
 										// Clock polarity high, MSB
 	UCA0CTLW0 |= UCSSEL__ACLK;                // ACLK
-	UCA0BR0 = 0x02;                           // /2
-	UCA0BR1 = 0;                              //
+
 	UCA0MCTLW = 0;                            // No modulation
 	UCA0CTLW0 &= ~UCSWRST;                    // **Initialize USCI state machine**
-	//UCA0IE |= UCRXIE | UCTXIE;                         // Enable USCI_A0 RX interrupt
 }

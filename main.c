@@ -38,8 +38,11 @@ extern int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
 extern int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
 #endif
 
-unsigned char buffer[100];
+unsigned char receive_buffer[100];
+unsigned char send_buffer[100];
+unsigned int current_send = 0;
 unsigned int current_index = 0;
+unsigned int current_read = 0;
 
 int begin()
 {
@@ -60,6 +63,11 @@ int begin()
  */
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
+    //Test code to force the FONA to detect the baud rate.
+    send_buffer[0] = 'A';
+    send_buffer[1] = 'T';
+    send_buffer[2] = '\r';
+    send_buffer[3] = '\0';
 
     system_init();
 
@@ -83,12 +91,21 @@ int main(void) {
 	for(;;) {
 		readGyro();
 		if (alarm_fall) {
+			if (!distress_sent) {
+				transmit_uart("ATI\r");
+				distress_sent = 1;
+			}
 			lcdPrint("FALL", 1, 4);
 		} else {
 			lcdPrint("GOOD", 1, 4);
 		}
 
 #ifdef DEBUG
+		/*******************************************************************
+		 * WARNING!!!
+		 * TURNING ON PRINTFs WILL CAUSE TIMING ISSUES.
+		 * E.G., UART and TIMER WON'T WORK PROPERLY.
+		 *******************************************************************/
 		printf("G: %.2f", fabs(calcGyro(gx)));
 		printf(", ");
 		printf("%.2f",fabs(calcGyro(gy)));

@@ -15,9 +15,11 @@ __interrupt void Port_1(void)
 {
 	extern int alarm_heartrate;
 	extern int alarm_fall;
+	extern int distress_sent;
 	//Reset button detected.  Clear fall flags.
 	alarm_heartrate = 0;
 	alarm_fall = 0;
+	distress_sent = 0;
 	P1IFG &= ~BIT2;
 	P1OUT &= ~BIT7;
 }
@@ -75,21 +77,30 @@ __interrupt void Timer1_A1 (void)
 #pragma vector=USCI_A1_VECTOR
 __interrupt void USCI_A1_ISR(void)
 {
-extern unsigned char buffer[];
+extern unsigned char receive_buffer[];
+extern unsigned char send_buffer[];
 extern unsigned int current_index;
+extern unsigned int current_send;
+
 extern char* command;
 
   switch(__even_in_range(UCA1IV, USCI_UART_UCTXCPTIFG))
   {
     case USCI_NONE: break;
     case USCI_UART_UCRXIFG:
-    	buffer[current_index++] = UCA1RXBUF;
+    	receive_buffer[current_index] = UCA1RXBUF;
+    	if (current_index < (100 - 1))
+    		current_index++;
+    	  else
+    		  current_index = 0;
 		break;
     case USCI_UART_UCTXIFG:
-    	if (*command != '\0')
-    		UCA1TXBUF = *command++;
-    	else
+    	if (send_buffer[current_send] != '\0') {
+    		UCA1TXBUF = send_buffer[current_send++];
+    	} else {
     		UCA1IE &= ~UCTXIE;
+    		current_send = 0;
+    	}
 		break;
     case USCI_UART_UCSTTIFG: break;
     case USCI_UART_UCTXCPTIFG: break;
