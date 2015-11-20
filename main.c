@@ -44,6 +44,11 @@ unsigned int current_send = 0;
 unsigned int current_index = 0;
 unsigned int current_read = 0;
 
+extern volatile int bpm;
+extern volatile unsigned int result;
+int volatile ADC_request=0;
+char bpm_str[5];
+
 int begin()
 {
 	enum gyro_scale gScl 	= G_SCALE_245DPS;
@@ -90,14 +95,30 @@ int main(void) {
 
 	for(;;) {
 		readGyro();
+
+		if(!(ADC12CTL1 & ADC12BUSY) && ADC_request==1)
+		{
+			result = ADC12MEM0&0x0FFF;
+			ADC_request=0;
+		}
+		sprintf(bpm_str,"%d",bpm);
+		if(bpm<100)
+		{
+			lcdPrint(" ", 4, 4);
+			lcdPrint(bpm_str,5,6);
+		}
+		else
+			lcdPrint(bpm_str,4,6);
+
 		if (alarm_fall) {
 			if (!distress_sent) {
 				transmit_uart("ATI\r");
 				distress_sent = 1;
 			}
-			lcdPrint("FALL", 1, 4);
+
+			lcdPrint("FAL", 1, 3);
 		} else {
-			lcdPrint("GOOD", 1, 4);
+			lcdPrint("GUD", 1, 3);
 		}
 
 #ifdef DEBUG

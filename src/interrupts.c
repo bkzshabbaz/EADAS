@@ -24,23 +24,30 @@ __interrupt void Port_1(void)
 	P1OUT &= ~BIT7;
 }
 
+volatile int i=0,beatinterval=0,bpm=0,flagup = 1;
+volatile unsigned int result,highp=0,lowp=4096,avp=0,time=0;
+char u_str[50];
+extern volatile int ADC_request;
+
 /*
  * Timer A3 interrupt service routine
  */
 #pragma vector=TIMER1_A1_VECTOR
 __interrupt void Timer1_A1 (void)
 {
-	extern volatile int i,beatinterval,bpm,flagup;
-	extern volatile unsigned int result,highp,lowp,avp,time;
+
 	if(i>=750)
 	{
 		P1OUT ^= BIT0;
 		i=0;
 	}
 			i++;		// Toggle P1.0 using exclusive-OR
-	ADC12CTL0 |= ADC12SC;		// Trigger Conversion
-	while(ADC12CTL1 & ADC12BUSY);	// TODO : Change code to so that we dont have to keep polling
-	result = ADC12MEM0&0x0FFF;
+
+	if(ADC_request==0)
+	{
+		ADC12CTL0 |= ADC12SC;
+		ADC_request=1;
+	}
 
 	if(result>highp)
 		highp = result;
@@ -49,24 +56,22 @@ __interrupt void Timer1_A1 (void)
 
 	avp = (highp+lowp)/2;
 
-	time++;
 	if(result>=avp && flagup==1)
 		{	flagup=0;
-			P9OUT ^= BIT7;
 			beatinterval = time;
+			P9OUT ^= BIT7;
 		}
+
+	time++;
+
 	if(result<avp && flagup == 0)
 		{
-		flagup=1;
-		time=0;
-		P9OUT ^= BIT7;
+			flagup=1;
+			time=0;
+			P9OUT ^= BIT7;
 		}
 
-
-
-	bpm = 6000/(2*beatinterval);
-//	sprintf(u_str,"%d  %d  %d\n\r",bpm,flagup,result); //TODO: remove this and print_uart
-//	print_uart(u_str);
+	bpm = 60000/(2*beatinterval);
 	switch(TA1IV);				// Read and Clear Interrupt flags
 }
 

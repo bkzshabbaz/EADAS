@@ -94,7 +94,7 @@ void lcdPrint(char *c, uint8_t start, uint8_t end) {
 	uint8_t arrVal = 0;
 	uint8_t loop = 0;
 	char d;
-	LCDCMEMCTL |= LCDCLRM;
+	//LCDCMEMCTL |= LCDCLRM;
 	//__delay_cycles(3000);
 
 	loop = start;

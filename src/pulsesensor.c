@@ -8,11 +8,6 @@
 #include "pulsesensor.h"
 
 
-volatile int i=0,beatinterval=0,bpm=0,flagup = 1;
-volatile unsigned int result,highp=0,lowp=4096,avp=0,time=0;
-char u_str[50];
-
-
 void initialize_timer()
 {
 	TA1CCTL0 = CCIE | CAP;						// Timer1_A3
