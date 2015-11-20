@@ -116,7 +116,7 @@ int main(void) {
 				distress_sent = 1;
 			}
 
-			lcdPrint("FAL", 1, 3);
+			 lcdPrint("FAL", 1, 3);
 		} else {
 			lcdPrint("GUD", 1, 3);
 		}
