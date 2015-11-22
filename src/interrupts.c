@@ -86,6 +86,7 @@ extern unsigned char receive_buffer[];
 extern unsigned char send_buffer[];
 extern unsigned int current_index;
 extern unsigned int current_send;
+extern unsigned int size;
 
 extern char* command;
 
@@ -94,10 +95,12 @@ extern char* command;
     case USCI_NONE: break;
     case USCI_UART_UCRXIFG:
     	receive_buffer[current_index] = UCA1RXBUF;
-    	if (current_index < (100 - 1))
+    	if (current_index < (100 - 1)) {
     		current_index++;
-    	  else
-    		  current_index = 0;
+    		size++;
+    	} else {
+    	    current_index = 0;
+    	}
 		break;
     case USCI_UART_UCTXIFG:
     	if (send_buffer[current_send] != '\0') {

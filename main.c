@@ -21,6 +21,7 @@
 #include "usci.h"
 #include "system.h"
 #include "lcd.h"
+#include "fona808.h"
 
 /*
  * Some code used from Sparkfun's LSM9DS0 library.
@@ -37,12 +38,6 @@ extern int16_t gx, gy, gz; // x, y, and z axis readings of the gyroscope
 extern int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
 extern int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
 #endif
-
-unsigned char receive_buffer[100];
-unsigned char send_buffer[100];
-unsigned int current_send = 0;
-unsigned int current_index = 0;
-unsigned int current_read = 0;
 
 extern volatile int bpm;
 extern volatile unsigned int result;
@@ -69,15 +64,10 @@ int begin()
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
     //Test code to force the FONA to detect the baud rate.
-    send_buffer[0] = 'A';
-    send_buffer[1] = 'T';
-    send_buffer[2] = '\r';
-    send_buffer[3] = '\0';
 
     system_init();
 
-	UCA1IE |= UCTXIE;		//Turn on TX interrupts and send the command to UART.
-    __bis_SR_register(GIE);
+	__bis_SR_register(GIE);
     __no_operation();
 
     P1OUT &= ~LED0;
@@ -92,6 +82,10 @@ int main(void) {
 	} else {
 		printf("LSM9DS0 initialized!\n");
 	}
+
+	initialize_fona();
+
+	set_phone_number("6463026046"); //TODO: This should come from the configuration.
 
 	for(;;) {
 		readGyro();
@@ -112,7 +106,7 @@ int main(void) {
 
 		if (alarm_fall) {
 			if (!distress_sent) {
-				transmit_uart("ATI\r");
+			    //send_sms("I've fallen and I can't get up\r");
 				distress_sent = 1;
 			}
 
