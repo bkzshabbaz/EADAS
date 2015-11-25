@@ -5,12 +5,21 @@
  * 			- Timer1_A1
  * 			- ADC Channel A7
  * 			- P9.7 (Will be changing to heart icon on LCD)
- * 		Gyro
+ * 		Gyro Connections:
  *
+ *      LSM9DS0 ------------- MSP430FR6989
+ *      CSG     ------------- P1.4
+ *      CSXM    ------------- P3.2
+ *      SDOG    ------------- P2.1
+ *      SDOXM   ------------- P2.1
+ *      SCL     ------------- P1.5
+ *      SDA     ------------- P2.0
+ *      VDD     ------------- 3v3
+ *      GND     ------------- GND
  * 		LCD
  *
  * 		GSM Module
- *
+ *      UART - P3.4 P3.5
  *
  */
 
