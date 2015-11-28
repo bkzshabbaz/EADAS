@@ -26,6 +26,7 @@ Distributed as-is; no warranty is given.
 #include "LSM9DS1_Types.h"
 #include <stdbool.h>
 #include <msp430.h>
+#include <stdio.h>
 
 #define LSM9DS1_COMMUNICATION_TIMEOUT 1000
 static struct IMUSettings settings;
@@ -158,9 +159,11 @@ uint16_t lsm9ds1_begin()
 	
 	// To verify communication, we can read from the WHO_AM_I register of
 	// each device. Store those in a variable so we can return them.
-	//uint8_t mTest = readByte(MAGNO, WHO_AM_I_M);		// Read the gyro WHO_AM_I
+	//LSM9DS1 WHO_AM_I's should return: 0x683D
+
+	uint8_t mTest = readByte(MAGNO, WHO_AM_I_M);		// Read the gyro WHO_AM_I
 	uint8_t xgTest = readByte(GYRO_X, WHO_AM_I_XG);	// Read the accel/mag WHO_AM_I
-	uint16_t whoAmICombined = (xgTest);// << 8) | mTest;
+	uint16_t whoAmICombined = (xgTest << 8) | mTest;
 	
 	if (whoAmICombined != ((WHO_AM_I_AG_RSP << 8) | WHO_AM_I_M_RSP))
 		return 0;
@@ -524,6 +527,11 @@ void readGyro()
 		gy -= gBiasRaw[Y_AXIS];
 		gz -= gBiasRaw[Z_AXIS];
 	}
+	printf("G: %.2f", fabs(calcGyro(gx)));
+    printf(", ");
+    printf("%.2f",fabs(calcGyro(gy)));
+    printf(", ");
+    printf("%.2f\n",fabs(calcGyro(gz)));
 }
 
 float calcGyro(int16_t gyro)

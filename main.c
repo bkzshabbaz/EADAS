@@ -30,7 +30,7 @@ int begin()
 	lsm9ds1_init();
 	volatile uint16_t whoami = lsm9ds1_begin();
 
-	return (whoami == 0x49D4);
+	return (whoami == 0x683D);
 }
 
 /*
@@ -53,9 +53,9 @@ int main(void) {
 
 	if (!begin())
 	{
-		printf("Unable to initialize LSM9DS0!\n");
+		printf("Unable to initialize LSM9DS1!\n");
 	} else {
-		printf("LSM9DS0 initialized!\n");
+		printf("LSM9DS1 initialized!\n");
 	}
 
 	for(;;) {
@@ -67,11 +67,11 @@ int main(void) {
 		}
 
 #ifdef DEBUG
-		printf("G: %.2f", fabs(calcGyro(gx)));
-		printf(", ");
-		printf("%.2f",fabs(calcGyro(gy)));
-		printf(", ");
-		printf("%.2f\n",fabs(calcGyro(gz)));
+//		printf("G: %.2f", fabs(calcGyro(gx)));
+//        printf(", ");
+//        printf("%.2f",fabs(calcGyro(gy)));
+//        printf(", ");
+//        printf("%.2f\n",fabs(calcGyro(gz)));
 
 		/*
 		 * The accelerometer will read 1g when for an axis that's
