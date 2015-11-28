@@ -6,6 +6,7 @@
 #include "usci.h"
 #include "lcd.h"
 #include "pulsesensor.h"
+
 /*
  * Initialize clock and peripherals
  */
@@ -47,6 +48,14 @@ void initialize_clock()
 	P2SEL0 |= BIT0 | BIT1;                    // Configure SOMI and MISO
 	PJSEL0 |= BIT4 | BIT5;                    // For XT1
 
+	//keypad initialization
+	P8DIR |= BIT5 + BIT6 + BIT7;
+	P8OUT &= ~(BIT5 + BIT6 + BIT7);
+
+	P9DIR &= ~(BIT0 + BIT1 + BIT5 + BIT6);
+	P9OUT &= ~(BIT0 + BIT1 + BIT5 + BIT6);
+	P9REN |= (BIT0 + BIT1 + BIT5 + BIT6);
+
 	// Disable the GPIO power-on default high-impedance mode to activate
 	// previously configured port settings
 	PM5CTL0 &= ~LOCKLPM5;
@@ -65,4 +74,3 @@ void initialize_clock()
 	}while (SFRIFG1&OFIFG);                   // Test oscillator fault flag
 	CSCTL0_H = 0;                             // Lock CS registers
 }
-

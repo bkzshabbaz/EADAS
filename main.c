@@ -94,8 +94,8 @@ int main(void) {
 
 	initialize_fona();
 
-	set_phone_number("6463026046"); //TODO: This should come from the configuration.
-
+	//set_phone_number("6463026046"); //TODO: This should come from the configuration.
+	entrPhone();
 	for(;;) {
 		readGyro();
 
