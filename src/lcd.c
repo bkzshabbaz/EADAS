@@ -5,6 +5,8 @@
 #include <string.h>
 #include "fona808.h"
 
+#define DEFAULT_PHONE "6463026046"
+
 const uint8_t lcdSeg[][2] = { { 0x00, 0x00 }, //space
 		{ 0x00, 0x00 }, //! N/A
 		{ 0x00, 0xC0 }, //"
@@ -65,6 +67,7 @@ const uint8_t lcdSeg[][2] = { { 0x00, 0x00 }, //space
 		{ 0x00, 0xB0 }, //Y
 		{ 0x90, 0x28 } //Z
 };
+
 
 const uint8_t lcdSymbols[5] = { 0x00, 0x01, 0x02, 0x04, 0x08 };
 volatile uint8_t count = 0;
@@ -321,6 +324,12 @@ void entrPhone(void){
 				lcdPrint("9", segment, segment);
 				phnNum[counter]='9';
 				incSeg();
+			}else if(P9IN & BIT6){
+				while(P9IN & BIT6);
+				if(counter==0){
+				set_phone_number(DEFAULT_PHONE);
+				break;
+				}
 			}
 			P8OUT &= ~BIT7;
 
