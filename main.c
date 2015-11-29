@@ -48,10 +48,15 @@ extern int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
 extern int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
 #endif
 
-extern volatile int bpm;
-extern volatile unsigned int result;
+
+extern volatile int i,beatinterval,bpm,flagup,beatupdate;
+extern volatile unsigned int result,highp,lowp,avp,time;
 int volatile ADC_request=0;
 char bpm_str[5];
+#define AVG_NUM 15
+static int bpms[AVG_NUM],bpmav=0;
+unsigned int bpm_threshold = 0;
+extern unsigned int adc_flag;
 
 int begin()
 {
@@ -96,26 +101,82 @@ int main(void) {
 
 	//set_phone_number("6463026046"); //TODO: This should come from the configuration.
 	entrPhone();
+	int i=-1,j;
 	for(;;) {
 		readGyro();
+		if (adc_flag) {
+			if(!(ADC12CTL1 & ADC12BUSY) && ADC_request==1)
+			{
+				result = ADC12MEM0&0x0FFF;
+				ADC_request=0;
 
-		if(!(ADC12CTL1 & ADC12BUSY) && ADC_request==1)
-		{
-			result = ADC12MEM0&0x0FFF;
-			ADC_request=0;
+				if(result>highp && result<3500)
+					highp = result;
+				if (result<lowp && result>1500)
+					lowp=result;
+
+				avp = (highp+lowp)/2;
+
+				if(result>=avp && flagup==1)
+					{	flagup=0;
+						beatinterval = time;
+						P9OUT ^= BIT7;
+					}
+
+				if(result<avp && flagup == 0)
+					{
+						flagup=1;
+						time=0;
+						P9OUT ^= BIT7;
+					}
+
+				bpm = 60000/(2*beatinterval);
+				if(bpm<200){
+					i=(i+1)%AVG_NUM;
+					bpms[i]=bpm;
+				}
+
+			}
+
+			bpmav=0;
+			for(j=0;j<15;j++)
+			{
+				bpmav=bpmav+bpms[j];
+			}
+			bpmav=bpmav/15;
+
+
+
+			sprintf(bpm_str,"%d",bpmav);
+			if(bpmav<100)
+			{
+				lcdPrint(" ", 4, 4);
+				lcdPrint(bpm_str,5,6);
+			}
+			else
+				lcdPrint(bpm_str,4,6);
+
+			if(bpmav>130)
+			{
+				bpm_threshold++;
+
+			} else if (bpm_threshold != 0){
+				bpm_threshold--;
+			}
 		}
-		sprintf(bpm_str,"%d",bpm);
-		if(bpm<100)
-		{
-			lcdPrint(" ", 4, 4);
-			lcdPrint(bpm_str,5,6);
+		if (bpm_threshold > 1000) {
+			//printf("HEARTATTACK!!!\n");
+			P1OUT |= BIT0;
+			if (!distress_sent) {
+				send_sms("Im having a heart-attack!\r");
+				distress_sent = 1;
+			}
 		}
-		else
-			lcdPrint(bpm_str,4,6);
+
 
 		if (alarm_fall) {
 			if (!distress_sent) {
-			    //send_sms("I've fallen and I can't get up\r");
+			    send_sms("I've fallen and I can't get up\r");
 				distress_sent = 1;
 			}
 

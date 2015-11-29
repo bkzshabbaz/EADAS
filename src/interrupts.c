@@ -24,11 +24,11 @@ __interrupt void Port_1(void)
 	P1OUT &= ~BIT7;
 }
 
-volatile int i=0,beatinterval=0,bpm=0,flagup = 1;
+volatile int i=0,beatinterval=0,bpm=0,flagup = 1,beatupdate=0;
 volatile unsigned int result,highp=0,lowp=4096,avp=0,time=0;
 char u_str[50];
 extern volatile int ADC_request;
-
+unsigned int adc_flag = 0;
 /*
  * Timer A3 interrupt service routine
  */
@@ -36,43 +36,23 @@ extern volatile int ADC_request;
 __interrupt void Timer1_A1 (void)
 {
 
-	if(i>=750)
+
+	if(i>=2000)
 	{
-		P1OUT ^= BIT0;
-		i=0;
-	}
-			i++;		// Toggle P1.0 using exclusive-OR
+		//P1OUT |=BIT0;
+		adc_flag = 1;
 
 	if(ADC_request==0)
 	{
 		ADC12CTL0 |= ADC12SC;
 		ADC_request=1;
 	}
-
-	if(result>highp)
-		highp = result;
-	if (result<lowp && result>1500)
-		lowp=result;
-
-	avp = (highp+lowp)/2;
-
-	if(result>=avp && flagup==1)
-		{	flagup=0;
-			beatinterval = time;
-			P9OUT ^= BIT7;
-		}
-
 	time++;
 
-	if(result<avp && flagup == 0)
-		{
-			flagup=1;
-			time=0;
-			P9OUT ^= BIT7;
-		}
-
-	bpm = 60000/(2*beatinterval);
 	switch(TA1IV);				// Read and Clear Interrupt flags
+	}
+	i++;
+	switch(TA1IV);
 }
 
 /*

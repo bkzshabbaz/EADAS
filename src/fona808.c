@@ -29,7 +29,6 @@ void send_sms(char *message)
 {
     //send at command to put it in SMS mode
     send_check_reply(AT_SMS_MODE, AT_OK);
-    //wait for mark >
 
     //Code taken from Adafruit FONA library
     char sendcmd[30] = "AT+CMGS=\"";
@@ -37,6 +36,7 @@ void send_sms(char *message)
     sendcmd[strlen(sendcmd)] = '\"';
     sendcmd[strlen(sendcmd)] = '\r';
 
+    //wait for mark >
     send_check_reply(sendcmd, AT_MARK);
     send(message);
     //busy_wait();
