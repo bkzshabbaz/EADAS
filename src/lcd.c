@@ -242,16 +242,16 @@ void chkSeg(void){
 void entrPhone(void){
 
 	lcdPrint("Enter",1,6);
-	__delay_cycles(1000000);
+	__delay_cycles(10000000);
 	LCDCMEMCTL |= LCDCLRM;
-	lcdPrint("your",1,6);
-	__delay_cycles(1000000);
+	lcdPrint("Your",1,6);
+	__delay_cycles(10000000);
 	LCDCMEMCTL |= LCDCLRM;
 	lcdPrint("Phone",1,6);
-	__delay_cycles(1000000);
+	__delay_cycles(10000000);
 	LCDCMEMCTL |= LCDCLRM;
 	lcdPrint("Number",1,6);
-	__delay_cycles(1000000);
+	__delay_cycles(10000000);
 	LCDCMEMCTL |= LCDCLRM;
 	while(1){
 	if(counter<10){
