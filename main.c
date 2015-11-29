@@ -21,6 +21,9 @@
  * 		GSM Module
  *      UART - P3.4 P3.5
  *
+ *      Keypad
+ *      P8.5, P8.6, P8.7, P9.0, P9.1, P9.5, P9.6
+ *
  */
 
 #include <msp430.h> 
@@ -72,6 +75,74 @@ int begin()
 	return (whoami == 0x49D4);
 }
 
+void check_heartrate()
+{
+      if (adc_flag) {
+          if(!(ADC12CTL1 & ADC12BUSY) && ADC_request==1)
+          {
+              result = ADC12MEM0&0x0FFF;
+              ADC_request=0;
+
+              if(result>highp && result<3500)
+                  highp = result;
+              if (result<lowp && result>1500)
+                  lowp=result;
+
+              avp = (highp+lowp)/2;
+
+              if(result>=avp && flagup==1)
+                  {   flagup=0;
+                      beatinterval = time;
+                      P9OUT ^= BIT7;
+                  }
+
+              if(result<avp && flagup == 0)
+                  {
+                      flagup=1;
+                      time=0;
+                      P9OUT ^= BIT7;
+                  }
+
+              bpm = 60000/(2*beatinterval);
+              if(bpm<200){
+                  i=(i+1)%AVG_NUM;
+                  bpms[i]=bpm;
+              }
+
+          }
+
+          bpmav=0;
+          for(j=0;j<15;j++)
+          {
+              bpmav=bpmav+bpms[j];
+          }
+          bpmav=bpmav/15;
+
+
+
+          sprintf(bpm_str,"%d",bpmav);
+          if(bpmav<100)
+          {
+              lcdPrint(" ", 4, 4);
+              lcdPrint(bpm_str,5,6);
+          }
+          else
+              lcdPrint(bpm_str,4,6);
+
+          if(bpmav>130)
+          {
+              bpm_threshold++;
+
+          } else if (bpm_threshold != 0){
+              bpm_threshold--;
+          }
+      }
+
+      if (bpm_threshold > 1000) {
+          alarm_heartrate = 1;
+      }
+}
+
 /*
  * main.c
  */
@@ -97,90 +168,27 @@ int main(void) {
 		printf("LSM9DS0 initialized!\n");
 	}
 
-	initialize_fona();
-
 	//set_phone_number("6463026046"); //TODO: This should come from the configuration.
 	entrPhone();
+	initialize_fona();
+
 	int i=-1,j;
 	for(;;) {
 		readGyro();
-		if (adc_flag) {
-			if(!(ADC12CTL1 & ADC12BUSY) && ADC_request==1)
-			{
-				result = ADC12MEM0&0x0FFF;
-				ADC_request=0;
-
-				if(result>highp && result<3500)
-					highp = result;
-				if (result<lowp && result>1500)
-					lowp=result;
-
-				avp = (highp+lowp)/2;
-
-				if(result>=avp && flagup==1)
-					{	flagup=0;
-						beatinterval = time;
-						P9OUT ^= BIT7;
-					}
-
-				if(result<avp && flagup == 0)
-					{
-						flagup=1;
-						time=0;
-						P9OUT ^= BIT7;
-					}
-
-				bpm = 60000/(2*beatinterval);
-				if(bpm<200){
-					i=(i+1)%AVG_NUM;
-					bpms[i]=bpm;
-				}
-
-			}
-
-			bpmav=0;
-			for(j=0;j<15;j++)
-			{
-				bpmav=bpmav+bpms[j];
-			}
-			bpmav=bpmav/15;
-
-
-
-			sprintf(bpm_str,"%d",bpmav);
-			if(bpmav<100)
-			{
-				lcdPrint(" ", 4, 4);
-				lcdPrint(bpm_str,5,6);
-			}
-			else
-				lcdPrint(bpm_str,4,6);
-
-			if(bpmav>130)
-			{
-				bpm_threshold++;
-
-			} else if (bpm_threshold != 0){
-				bpm_threshold--;
-			}
-		}
-		if (bpm_threshold > 1000) {
-			//printf("HEARTATTACK!!!\n");
-			P1OUT |= BIT0;
-			if (!distress_sent) {
-				send_sms("Im having a heart-attack!\r");
-				distress_sent = 1;
-			}
-		}
-
+		check_heartrate();
 
 		if (alarm_fall) {
 			if (!distress_sent) {
 			    send_sms("I've fallen and I can't get up\r");
 				distress_sent = 1;
 			}
-
 			lcdPrint("FAL", 1, 3);
+		} else if (alarm_heartrate){
+            if (!distress_sent) {
+              send_sms("Im having a heart-attack!\r");
+              distress_sent = 1;
+            }
+            lcdPrint("HRT", 1, 3);
 		} else {
 			lcdPrint("GUD", 1, 3);
 		}
