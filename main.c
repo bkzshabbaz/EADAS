@@ -110,7 +110,7 @@ void check_heartrate()
               }
 
           }
-
+          int j;
           bpmav=0;
           for(j=0;j<15;j++)
           {
@@ -179,14 +179,14 @@ int main(void) {
 
 		if (alarm_fall) {
 			if (!distress_sent) {
-			    send_sms("I've fallen and I can't get up\r");
+			    //send_sms("I've fallen and I can't get up\r");
 				distress_sent = 1;
 			}
 			lcdPrint("FAL", 1, 3);
 		} else if (alarm_heartrate){
             if (!distress_sent) {
-              send_sms("Im having a heart-attack!\r");
-              distress_sent = 1;
+                //send_sms("Im having a heart-attack!\r");
+                distress_sent = 1;
             }
             lcdPrint("HRT", 1, 3);
 		} else {

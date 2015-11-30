@@ -56,14 +56,24 @@ int initialize_fona()
 {
     if (send_check_reply(AT, AT_RESPONSE))
         printf("Got a good reply for first AT\n");
+    else
+        printf("Got no reply for first AT\n");
     if (send_check_reply(AT, AT_RESPONSE))
-        printf("Got a good reply for first AT\n");
+        printf("Got a good reply for second AT\n");
+    else
+        printf("Got no reply for second AT\n");
     if (send_check_reply(AT, AT_RESPONSE))
-        printf("Got a good reply for first AT\n");
-
+        printf("Got a good reply for third AT\n");
+    else
+        printf("Got no reply for third AT\n");
     if (send_check_reply(AT_ECHO_OFF, AT_ECHO_OFF AT_OK))
         printf("Echo turned off successfully\n");
-
+    else
+        printf("Could not turn off echo\n");
+    if (send_check_reply(AT, AT_OK))
+            printf("Got a good reply for fourth AT\n");
+        else
+            printf("Got no reply for fourth AT\n");
     return 0;
 }
 
