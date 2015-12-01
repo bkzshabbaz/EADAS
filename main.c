@@ -168,7 +168,6 @@ int main(void) {
 		printf("LSM9DS0 initialized!\n");
 	}
 
-	//set_phone_number("6463026046"); //TODO: This should come from the configuration.
 	entrPhone();
 	initialize_fona();
 

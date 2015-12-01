@@ -9,6 +9,7 @@
  * Button 2 press ISR
  */
 #include <msp430.h>
+#define MAX_BUFFER 256
 
 #pragma vector=PORT1_VECTOR
 __interrupt void Port_1(void)
@@ -75,7 +76,7 @@ extern char* command;
     case USCI_NONE: break;
     case USCI_UART_UCRXIFG:
     	receive_buffer[current_index] = UCA1RXBUF;
-    	if (current_index < (100 - 1)) {
+    	if (current_index < (MAX_BUFFER - 1)) {
     		current_index++;
     		size++;
     	} else {

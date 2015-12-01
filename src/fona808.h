@@ -9,6 +9,16 @@
 #define AT_SMS_MODE "AT+CMGF=1\r"
 #define AT_SEND_MSG "AT+CMGS=\""
 #define AT_MARK     "\r\n>"
+#define AT_GPSPWR_ON    "AT+CGPSPWR=1\r"  //Response: OK
+#define AT_GPSRST_WRM   "AT+CGPSRST=2\r"  //Response: OK
+#define AT_GPSINFO      "AT+CGPSINF=0\r"  //Response:
+#define AT_GPSOUT       "AT+CGPSOUT=1\r"  //Response: OK
+
+struct gps_coords
+{
+    char lat[15];
+    char lon[15];
+};
 
 char * get_location();
 
