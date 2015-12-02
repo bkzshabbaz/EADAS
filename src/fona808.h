@@ -16,8 +16,9 @@
 
 struct gps_coords
 {
-    char lat[15];
-    char lon[15];
+    char lat[16];
+    char lon[16];
+    char time[30];
 };
 
 char * get_location();

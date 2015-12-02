@@ -11,16 +11,18 @@
 
 #define MAX_BUFFER 256
 
-unsigned char receive_buffer[MAX_BUFFER];
-unsigned char send_buffer[MAX_BUFFER];
-unsigned int current_send = 0;
-unsigned int current_index = 0;
-unsigned int current_read = 0;
-unsigned int size = 0;
+char sms_buffer[160];
 
-struct gps_coords my_coord;
+volatile unsigned char receive_buffer[MAX_BUFFER];
+volatile unsigned char send_buffer[MAX_BUFFER];
+volatile unsigned int current_send = 0;
+volatile unsigned int current_index = 0;
+volatile unsigned int current_read = 0;
+volatile unsigned int size = 0;
 
 char *phone_number;
+
+struct gps_coords my_coord;
 
 char read_buffer[MAX_BUFFER];
 
@@ -31,6 +33,7 @@ int set_phone_number(char *phone_num)
 
 void send_sms(char *message)
 {
+    get_gps(&my_coord);
     //send at command to put it in SMS mode
     send_check_reply(AT_SMS_MODE, AT_OK);
 
@@ -42,8 +45,12 @@ void send_sms(char *message)
 
     //wait for mark >
     send_check_reply(sendcmd, AT_MARK);
-    send(message);
-
+    sprintf(sms_buffer, "%s Location - Lat: %s Long: %s Time: %s\r",
+            message, my_coord.lat,
+            my_coord.lon, my_coord.time);
+    send(sms_buffer);
+    busy_wait();
+    busy_wait();
     busy_wait();
     char endcmd[3];
     endcmd[0] = 0x1A;
@@ -64,7 +71,7 @@ static int get_gps(struct gps_coords *gps_coord)
     busy_wait();
     busy_wait();
     int num_read = read(read_buffer);
-    int comma=0,j=0,i;
+    unsigned int comma=0,j=0,i;
     for(i=0; read_buffer[i] != '\0' && i < num_read;i++)
     {
         if(read_buffer[i]==',')
@@ -78,23 +85,61 @@ static int get_gps(struct gps_coords *gps_coord)
 
         if(comma==1)
         {
+            if (j==2) {
+                gps_coord->lat[j++] = ' ';
+            }
             gps_coord->lat[j++] = read_buffer[i];
-            gps_coord->lat[j] = '\0';
+            gps_coord->lat[j] = ' ';
+            gps_coord->lat[j+1] = 'N';
+            gps_coord->lat[j+2] = '\0';
+
         }
 
         if(comma==2)
         {
+            if (j==2) {
+                gps_coord->lon[j++] = ' ';
+            }
             gps_coord->lon[j++] = read_buffer[i];
-            gps_coord->lon[j] = '\0';
+            gps_coord->lon[j] = ' ';
+            gps_coord->lon[j+1] = 'W';
+            gps_coord->lon[j+2] = '\0';
         }
 
-        if(comma>2)
+        if(comma==4)
+        {
+           if(j==4 || j==7)
+           {
+               gps_coord->time[j++]='-';
+           }
+
+           if(j==10)
+           {
+               gps_coord->time[j++]=' ';
+           }
+
+           if(j==13 || j==16)
+           {
+               gps_coord->time[j++]=':';
+           }
+
+           gps_coord->time[j++]=read_buffer[i];
+           gps_coord->time[j+1] = ' ';
+           gps_coord->time[j+2] = 'U';
+           gps_coord->time[j+3] = 'T';
+           gps_coord->time[j+4] = 'C';
+
+           gps_coord->time[j+5]='\0';
+        }
+
+        if(comma>4)
             break;
     }
 }
 
 int initialize_fona()
 {
+    int errors = 0;
     if (send_check_reply(AT, AT_RESPONSE))
         printf("Got a good reply for first AT\n");
     else
@@ -105,7 +150,7 @@ int initialize_fona()
     else
         printf("Got no reply for second AT\n");
 
-    if (send_check_reply(AT, AT_RESPONSE))
+    if (send_check_reply("ATZ\r", AT_RESPONSE))
         printf("Got a good reply for third AT\n");
     else
         printf("Got no reply for third AT\n");
@@ -131,21 +176,29 @@ int initialize_fona()
 #define AT_GPSOUT       "AT+CGPSOUT=1"  //Response: OK
      */
     if (send_check_reply(AT_GPSPWR_ON, AT_OK))
-        printf("GPS powered on\n");
+        errors++;
+        //printf("GPS powered on\n");
     else
         printf("Couldn't power GPS on\n");
 
-    if (send_check_reply(AT_GPSRST_WRM, AT_OK))
-        printf("GPS reset: warm\n");
+    if (send_check_reply(AT, AT_OK))
+        errors++;
+        //printf("Got a good reply for sixth AT\n");
     else
-        printf("Couldn't reset GPS\n");
+        printf("Got no reply for sixth AT\n");
 
     if (send_check_reply(AT_GPSOUT, AT_OK))
-        printf("GPS output set to 1\n");
+        errors++;
+        //printf("GPS output set to 1\n");
     else
         printf("Couldn't set GPS output\n");
 
-    get_gps(&my_coord);
+    if (send_check_reply(AT, AT_OK))
+        errors++;
+        //printf("Got a good reply for seventh AT\n");
+    else
+        printf("Got no reply for seventh AT\n");
+
     return 0;
 }
 
@@ -190,7 +243,7 @@ static int send_check_reply(const char* send, const char* reply)
 
     int num_read = read(read_buffer);
 
-    if (strncmp(read_buffer, reply, num_read) == 0)
+    if (strcmp(read_buffer, reply) == 0)
        return 1;
     else
        return 0;

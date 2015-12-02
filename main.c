@@ -51,7 +51,6 @@ extern int16_t ax, ay, az; // x, y, and z axis readings of the accelerometer
 extern int16_t mx, my, mz; // x, y, and z axis readings of the magnetometer
 #endif
 
-
 extern volatile int i,beatinterval,bpm,flagup,beatupdate;
 extern volatile unsigned int result,highp,lowp,avp,time;
 int volatile ADC_request=0;
@@ -143,12 +142,17 @@ void check_heartrate()
       }
 }
 
+void send_distress(char *message)
+{
+    send_sms(message);
+    distress_sent = 1;
+}
+
 /*
  * main.c
  */
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
-    //Test code to force the FONA to detect the baud rate.
 
     system_init();
 
@@ -178,14 +182,12 @@ int main(void) {
 
 		if (alarm_fall) {
 			if (!distress_sent) {
-			    //send_sms("I've fallen and I can't get up\r");
-				distress_sent = 1;
+			    send_distress("I've fallen!");
 			}
 			lcdPrint("FAL", 1, 3);
 		} else if (alarm_heartrate){
             if (!distress_sent) {
-                //send_sms("Im having a heart-attack!\r");
-                distress_sent = 1;
+                send_distress("Im having a heart-attack!");
             }
             lcdPrint("HRT", 1, 3);
 		} else {
