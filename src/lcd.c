@@ -163,10 +163,15 @@ void lcdPrint(char *c, uint8_t start, uint8_t end) {
 
 }
 
-void lcdBlinkSym(uint8_t symbol) {
+void lcdBlinkSym(uint8_t symbol,uint8_t status) {
 
-	LCDM3 = lcdSymbols[symbol];
-	LCDCPCTL0 |= LCDS4 + LCDS5;
+	if(status == 1){
+		LCDM3 = lcdSymbols[symbol];
+		LCDCPCTL0 |= LCDS4 + LCDS5;
+	}else if(status == 0){
+		LCDM3 = 0x00;
+		LCDCPCTL0 &= ~(LCDS4 + LCDS5);
+	}
 
 }
 

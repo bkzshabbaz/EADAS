@@ -17,7 +17,7 @@ void lcdSegOn(void);
 void lcdSegOff(void);
 void lcdIOInit(void);
 void lcdPrint(char *c, uint8_t start, uint8_t end);
-void lcdBlinkSym(uint8_t symbol);
+void lcdBlinkSym(uint8_t symbol,uint8_t status);
 void incSeg(void);
 void chkSeg(void);
 void entrPhone(void);
