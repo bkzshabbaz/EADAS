@@ -25,7 +25,7 @@ __interrupt void Port_1(void)
 	P1OUT &= ~BIT7;
 }
 
-volatile int i=0,beatinterval=0,bpm=0,flagup = 1,beatupdate=0;
+volatile int i=0,beatinterval=0,bpm=0,flagup = 1,beat_detect=1;
 volatile unsigned int result,highp=0,lowp=4096,avp=0,time=0;
 char u_str[50];
 extern volatile int ADC_request;
@@ -38,7 +38,7 @@ __interrupt void Timer1_A1 (void)
 {
 
 
-	if(i>=2000)
+	if(i>=250)
 	{
 		//P1OUT |=BIT0;
 		adc_flag = 1;
@@ -48,11 +48,20 @@ __interrupt void Timer1_A1 (void)
 		ADC12CTL0 |= ADC12SC;
 		ADC_request=1;
 	}
-	time++;
+	if(time<65536)
+		time++;
+	if(i>1250)
+	{
+		i=250;
+		if(beat_detect==1)
+			beat_detect=0;
 
-	switch(TA1IV);				// Read and Clear Interrupt flags
 	}
 	i++;
+	switch(TA1IV);				// Read and Clear Interrupt flags
+	}
+	if(i<500)
+		i++;
 	switch(TA1IV);
 }
 
