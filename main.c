@@ -1,10 +1,10 @@
 /*	EADAS
  * 	Peripheral Usage
  * 		Pulse Sensor
- * 			- P8.2
+ * 			- P8.4
  * 			- Timer1_A1
  * 			- ADC Channel A7
- * 			- P9.7 (Will be changing to heart icon on LCD)
+ * 			- Heart Segment on LCD
  * 		Gyro Connections:
  *
  *      LSM9DS0 ------------- MSP430FR6989
