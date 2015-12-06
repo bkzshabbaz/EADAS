@@ -17,10 +17,12 @@ __interrupt void Port_1(void)
 	extern int alarm_heartrate;
 	extern int alarm_fall;
 	extern int distress_sent;
+	extern unsigned int bpm_threshold;
 	//Reset button detected.  Clear fall flags.
 	alarm_heartrate = 0;
 	alarm_fall = 0;
 	distress_sent = 0;
+	bpm_threshold = 0;
 	P1IFG &= ~BIT2;
 	P1OUT &= ~BIT7;
 }

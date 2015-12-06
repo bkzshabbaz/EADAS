@@ -72,12 +72,17 @@ int begin()
 	return (whoami == 0x49D4);
 }
 
+void send_distress(char *message)
+{
+    send_sms(message);
+    distress_sent = 1;
+}
+
 /*
  * main.c
  */
 int main(void) {
     WDTCTL = WDTPW | WDTHOLD;	// Stop watchdog timer
-    //Test code to force the FONA to detect the baud rate.
 
     system_init();
 
@@ -87,7 +92,7 @@ int main(void) {
     P1OUT &= ~LED0;
 	P1DIR |= LED0;
 
-	P9OUT |= LED1;
+	P9OUT &= ~LED1;
 	P9DIR |= LED1;
 
 	if (!begin())
@@ -99,8 +104,7 @@ int main(void) {
 
 	initialize_fona();
 
-	//set_phone_number("6463026046"); //TODO: This should come from the configuration.
-	//entrPhone();
+	entrPhone();
 	int i=-1,j;
 	for(;;) {
 		readGyro();
@@ -181,24 +185,22 @@ int main(void) {
 			}
 		}
 		if (bpm_threshold > 1000) {
-			//printf("HEARTATTACK!!!\n");
 			P1OUT |= BIT0;
 			if (!distress_sent) {
-				send_sms("Im having a heart-attack!\r");
-				distress_sent = 1;
+				send_distress("Heart attack!");
 			}
-		}
-
-
-		if (alarm_fall) {
+			lcdPrint("HRT", 1, 3);
+		} else if (alarm_fall) {
 			if (!distress_sent) {
-			    send_sms("I've fallen and I can't get up\r");
-				distress_sent = 1;
+				send_distress("I've fallen!");
 			}
 
 			lcdPrint("FAL", 1, 3);
+			P9OUT |= LED1;
 		} else {
 			lcdPrint("GUD", 1, 3);
+			P1OUT &= ~BIT0;
+			P9OUT &= ~LED1;
 		}
 
 #ifdef DEBUG
