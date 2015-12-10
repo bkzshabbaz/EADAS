@@ -190,15 +190,18 @@ int main(void) {
 				send_distress("Heart attack!");
 			}
 			lcdPrint("HRT", 1, 3);
+			lcdBlinkSym(EXCL,1);
 		} else if (alarm_fall) {
 			if (!distress_sent) {
 				send_distress("I've fallen!");
 			}
 
 			lcdPrint("FAL", 1, 3);
+			lcdBlinkSym(EXCL,1);
 			P9OUT |= LED1;
 		} else {
 			lcdPrint("GUD", 1, 3);
+			lcdBlinkSym(EXCL,0);
 			P1OUT &= ~BIT0;
 			P9OUT &= ~LED1;
 		}
