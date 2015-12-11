@@ -62,7 +62,7 @@ __interrupt void Timer1_A1 (void)
 	i++;
 	switch(TA1IV);				// Read and Clear Interrupt flags
 	}
-	if(i<500)
+	if(i<250)
 		i++;
 	switch(TA1IV);
 }
